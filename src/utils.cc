@@ -27,7 +27,7 @@ void hexdump(const unsigned char *buf, const uint64_t len)
     if (!buf)
         return;
 
-    std::cout << resetiosflags(std::ios_base::showbase);
+    std::cout << std::resetiosflags(std::ios_base::showbase);
     std::cout << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << "0000: ";
     memset(asciidata, '.', 16);
     asciidata[16] = 0;

@@ -1,4 +1,4 @@
-#include "kayos_server.h"
+#include "kayos_writer.h"
 #include "utils.h"
 
 int main(int argc, char *arg[]) {
