@@ -146,6 +146,7 @@ int main(int argc, char *arg[]) {
 			if(ret == -1)
 				fatal_error("execvp kayos-client failed");
 		} else {
+			close(new_fd);
 			//setup_parent_pipes(fd_p2w, fd_w2p);
 		}
 	} while(1);
