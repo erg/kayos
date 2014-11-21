@@ -3,10 +3,17 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #include "kayos_server.h"
 #include "io.h"
 #include "utils.h"
+
+const char SERVER_PORT[] = "9890";
 
 // fills in stdin,stdout pair
 void safe_pipe(int fd[2]) {
@@ -34,12 +41,37 @@ void setup_parent_pipes(int fd_p2c[2], int fd_c2p[2]) {
 	close(fd_c2p[1]);
 }
 
+int init_network() {
+	struct addrinfo hints, *res;
+	int sockfd;
+	int ret;
 
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	getaddrinfo(NULL, SERVER_PORT, &hints, &res);
+
+	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	if(sockfd == -1)
+		fatal_error("socket failed");
+
+	ret = bind(sockfd, res->ai_addr, res->ai_addrlen);
+	if(ret == -1)
+		fatal_error("bind failed");
+
+	ret = listen(sockfd, 16);
+	if(ret == -1)
+		fatal_error("listen failed");
+	return sockfd;
+}
 
 int main(int argc, char *arg[]) {
 	int ret = 0;
 	int fd_p2c[2];
 	int fd_c2p[2];
+
 	pid_t childpid;
 
 	safe_pipe(fd_p2c);
@@ -61,7 +93,17 @@ int main(int argc, char *arg[]) {
 	else {
 		// Runs in parent process
 		setup_parent_pipes(fd_p2c, fd_c2p);
+		struct sockaddr_storage their_addr;
+		socklen_t addr_size = sizeof(their_addr);
 
+		int sockfd = init_network();
+		int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+		if(new_fd == -1)
+			fatal_error("accept failed");
+		else
+			std::cerr << "client connected! fd: " << new_fd << std::endl;
+
+		/*
 		do {
 			// Write to child
 			std::cerr << "server: loop start" << std::endl;
@@ -75,6 +117,7 @@ int main(int argc, char *arg[]) {
 			millis_sleep(500);
 			std::cerr << "server: loop end, looping again" << std::endl;
 		} while(1);
+		*/
 
 		int status;
 		//ret = waitpid(childpid, &status, WNOHANG); // don't wait
