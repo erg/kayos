@@ -59,6 +59,12 @@ int init_network() {
 	if(ret == -1)
 		fatal_error("bind failed");
 
+	int optval = 1;
+	ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+	if(ret == -1)
+		fatal_error("setsockopt SO_REUSEPORT failed");
+
+
 	ret = listen(sockfd, 16);
 	if(ret == -1)
 		fatal_error("listen failed");
@@ -124,19 +130,23 @@ int main(int argc, char *arg[]) {
 		if((childpid = fork()) == -1)
 			fatal_error("fork failed");
 
-		int fd_p2w[2];
-		int fd_w2p[2];
-		safe_pipe(fd_p2w);
-		safe_pipe(fd_w2p);
+		//int fd_p2w[2];
+		//int fd_w2p[2];
+		//safe_pipe(fd_p2w);
+		//safe_pipe(fd_w2p);
 
 		if(childpid == 0) {
-			setup_child_pipes(fd_p2w, fd_w2p);
+			//setup_child_pipes(fd_p2w, fd_w2p);
+			if (dup2(new_fd, 0) != 0)
+				fatal_error("client child: failed stdin setup");
+			//if (dup2(fd_c2p[1], 1) != 1)
+				//fatal_error("client child: failed stdout setup");
 
 			int ret = execvp("bin/kayos-client", 0);
 			if(ret == -1)
 				fatal_error("execvp kayos-client failed");
 		} else {
-			setup_parent_pipes(fd_p2w, fd_w2p);
+			//setup_parent_pipes(fd_p2w, fd_w2p);
 		}
 	} while(1);
 
