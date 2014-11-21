@@ -1,7 +1,7 @@
 VERSION = 0.0.1
 LIBPATH =
 CXX = clang++
-CFLAGS = -Wall -g -std=c++11
+CFLAGS = -Wall -Wpedantic -g -std=c++11
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
 WRITER_LIBS = -lforestdb
@@ -22,10 +22,12 @@ endif
 LIBNAME = $(DLL_PREFIX)$(LIBBASE)$(DLL_SUFFIX)$(DLL_EXTENSION)
 
 DLL_OBJS = $(PLAF_DLL_OBJS) \
+	src/io.o \
 	src/utils.o
 
 MASTER_HEADERS = src/portable_endian.h \
 	src/endian_types.h \
+	src/io.h \
 	src/utils.h
 
 SERVER_HEADERS = $(HEADERS) \
