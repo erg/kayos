@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <forestdb.h>
+
 #include "io.h"
 #include "utils.h"
 
@@ -16,7 +18,7 @@ int handle_buffer(char *buffer, ssize_t len) {
 	return stop;
 }
 
-void writer_loop() {
+void writer_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 	int stop = 0;
 	do {
 		char buffer[4096];
@@ -27,13 +29,39 @@ void writer_loop() {
 		else if(nbytes == -1) {
 			fatal_error("writer: safe_read");
 		}
-		fprintf(stderr, "writer: got %zd bytes, buffer: %s\n", nbytes, buffer);
-		fprintf(stdout, "ok\n");
+        named_hexdump(stderr, "writer got", buffer, nbytes);
 		stop = handle_buffer(buffer, sizeof(buffer));
+
+        ssize_t written = 0;
+        ssize_t ret = safe_write(0, "ok\n", 3, &written);
+        (void) ret;
 	} while(!stop);
 }
 
 int main(int argc, char *arg[]) {
-	writer_loop();
+	fdb_file_handle *dbfile;
+	fdb_kvs_handle *db;
+	fdb_status status;
+
+	fdb_config fconfig = fdb_get_default_config();
+	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
+	//if (comp_type == DAEMON_COMPACTION) {
+		//fconfig.compaction_mode = FDB_COMPACTION_AUTO;
+		//fconfig.compaction_threshold = 10;
+		//fconfig.compactor_sleep_duration = 5;
+	//}
+	status = fdb_open(&dbfile, "./test.fdb", &fconfig);
+	if(status != FDB_RESULT_SUCCESS)
+		fatal_error("fdb_open failed");
+	status = fdb_kvs_open_default(dbfile, &db, &kvs_config);
+	if(status != FDB_RESULT_SUCCESS)
+		fatal_error("fdb_kvs_open_default failed");
+
+
+	writer_loop(dbfile, db);
+
+	// cleanup forestdb
+	fdb_kvs_close(db);
+	fdb_close(dbfile);
 	return 0;
 }

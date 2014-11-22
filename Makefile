@@ -7,7 +7,7 @@ LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
 WRITER_LIBS = -lforestdb
 CLIENT_LIBS =
-INCLUDE_PATHS = -I ./src -I /usr/local/include
+INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./include
 
 MKDIR_P = mkdir -p
 BINDIR = bin
