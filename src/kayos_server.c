@@ -6,6 +6,7 @@
 #include <netinet/tcp.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -20,6 +21,14 @@ const char SERVER_PORT[] = "9890";
 void safe_pipe(int fd[2]) {
 	if(pipe(fd) == -1)
 		fatal_error("pipe failed");
+}
+
+int safe_mkdir(const char *path, mode_t mode) {
+	int ret;
+	ret = mkdir(path, mode);
+	if(ret == -1 && errno != EEXIST)
+		return -1;
+	return 0;
 }
 
 // XXX: macosx says dup2 can return EINTR, linux maybe does?
@@ -45,6 +54,13 @@ void redirect_child_stdin_stdout(int new_stdin, int new_stdout) {
 		fatal_error("child: failed stdin setup");
 	if(new_stdout != -1 && safe_dup2(new_stdout, STDOUT_FILENO) != STDOUT_FILENO)
 		fatal_error("child: failed stdout setup");
+}
+
+void init_ipc() {
+	int ret;
+	ret = safe_mkdir("./ipc", 0777);
+	if(ret == -1)
+		fatal_error("mkdir ./ipc failed");
 }
 
 int init_network() {
@@ -83,6 +99,7 @@ int main(int argc, char *arg[]) {
 	// pipes for kayos-writer child
 	int fd_p2w[2];
 	int fd_w2p[2];
+	init_ipc();
 	safe_pipe(fd_p2w);
 	safe_pipe(fd_w2p);
 
@@ -139,9 +156,8 @@ int main(int argc, char *arg[]) {
 	int status;
 	ret = waitpid(writerpid, &status, 0);
 	fprintf(stderr, "server: writer status: %d\n", WEXITSTATUS(status));
-	if(ret == -1) {
+	if(ret == -1)
 		fatal_error("wait_pid failed");
-	}
 
 	//cleanup parent to writer(stdin) pipe
 	close(fd_p2w[1]);
