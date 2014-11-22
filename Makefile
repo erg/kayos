@@ -2,7 +2,7 @@ VERSION = 0.0.1
 LIBPATH =
 CC = clang
 CXX = clang++
-CFLAGS = -Wall -Wpedantic -g
+CFLAGS = -Wall -Wpedantic -g -std=c99
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
 WRITER_LIBS = -lforestdb
@@ -64,13 +64,7 @@ kayos-writer: $(WRITER_OBJS)
 kayos-client: $(CLIENT_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-client $(CFLAGS) $(INCLUDE_PATHS) $(CLIENT_LIBS) $(CLIENT_OBJS)
 
-src/kayos_master.h.gch: src/kayos_master.h $(MASTER_HEADERS)
-	$(TOOLCHAIN_PREFIX)$(CC) -c -x c++-header $(CFLAGS) -o $@ $<
-
-#%.o: %.cc src/kayos_master.h.gch
-#	$(TOOLCHAIN_PREFIX)$(CXX) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
-
-%.o: %.c src/kayos_master.h.gch
+%.o: %.c
 	$(TOOLCHAIN_PREFIX)$(CC) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
 
 directories: $(BINDIR) $(BINDIR_TESTS)

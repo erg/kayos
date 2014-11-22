@@ -25,7 +25,7 @@ void client_loop() {
             fprintf(stderr, "client: client dc!\n");
         }
         
-        fprintf(stderr, "client: got buffer: %s\n", buffer);
+        fprintf(stderr, "client: got %zd bytes, buffer: %s\n", nbytes, buffer);
 		named_hexdump("client got:", (unsigned char *)buffer, nbytes);
         printf("ok\n");
 		stop = handle_buffer(buffer, sizeof(buffer));

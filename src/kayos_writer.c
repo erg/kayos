@@ -20,8 +20,8 @@ void writer_loop() {
 	do {
         char buffer[4096];
         fprintf(stderr, "writer: loop head\n");
-        safe_read(0, buffer, sizeof(buffer));
-        fprintf(stderr, "writer: got buffer: %s\n", buffer);
+        ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
+        fprintf(stderr, "writer: got %zd bytes, buffer: %s\n", nbytes, buffer);
         printf("ok\n");
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
