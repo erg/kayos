@@ -1,5 +1,6 @@
 #include "kayos_writer.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -18,11 +19,12 @@ int handle_buffer(char *buffer, ssize_t len) {
 void writer_loop() {
 	int stop = 0;
 	do {
-        char buffer[4096];
-        fprintf(stderr, "writer: loop head\n");
-        ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
-        fprintf(stderr, "writer: got %zd bytes, buffer: %s\n", nbytes, buffer);
-        printf("ok\n");
+		char buffer[4096];
+		fprintf(stderr, "writer: loop head\n");
+		ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
+		fprintf(stderr, "writer: got %zd bytes, buffer: %s\n", nbytes, buffer);
+		fprintf(stderr, " safe_read errno: %d\n", errno);
+		printf("ok\n");
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
 }

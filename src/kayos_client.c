@@ -18,16 +18,16 @@ int handle_buffer(char *buffer, ssize_t len) {
 void client_loop() {
 	int stop = 0;
 	do {
-        char buffer[4096];
-        fprintf(stderr, "client: loop head\n");
-        ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
-        if(nbytes == -1) {
-            fprintf(stderr, "client: client dc!\n");
-        }
-        
-        fprintf(stderr, "client: got %zd bytes, buffer: %s\n", nbytes, buffer);
+		char buffer[4096];
+		fprintf(stderr, "client: loop head\n");
+		ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
+		if(nbytes == -1) {
+			fprintf(stderr, "client: client dc!\n");
+		}
+
+		fprintf(stderr, "client: got %zd bytes, buffer: %s\n", nbytes, buffer);
 		named_hexdump("client got:", (unsigned char *)buffer, nbytes);
-        printf("ok\n");
+		printf("ok\n");
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
 }
