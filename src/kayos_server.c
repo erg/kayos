@@ -1,6 +1,7 @@
+#include "kayos_server.h"
+
 #include <stdio.h>
 #include <unistd.h>
-#include <iostream>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
@@ -9,7 +10,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#include "kayos_server.h"
 #include "io.h"
 #include "utils.h"
 
@@ -96,22 +96,6 @@ int main(int argc, char *arg[]) {
 		// Runs in parent process
 		setup_parent_pipes(fd_p2c, fd_c2p);
 
-		/*
-		do {
-			// Write to child
-			std::cerr << "server: loop start" << std::endl;
-			std::string cmd = "hi client\n";
-			safe_write(fd_p2c[1], (void*)cmd.c_str(), cmd.size());
-			std::cerr << "server: wrote msg" << std::endl;
-			char buffer[4096];
-			ssize_t nbytes;
-			nbytes = safe_read(fd_c2p[0], buffer, sizeof(buffer));
-			std::cerr << "server: got " << nbytes << " bytes from writer: " << buffer << std::endl;
-			millis_sleep(500);
-			std::cerr << "server: loop end, looping again" << std::endl;
-		} while(1);
-		*/
-
 		// cleanup
 		close(fd_p2c[1]);
 		close(fd_c2p[0]);
@@ -126,7 +110,7 @@ int main(int argc, char *arg[]) {
 		if(new_fd == -1)
 			fatal_error("accept failed");
 
-		std::cerr << "client connected! fd: " << new_fd << std::endl;
+		fprintf(stderr, "client connected! fd: %d\n", new_fd);
 		if((childpid = fork()) == -1)
 			fatal_error("fork failed");
 
@@ -154,7 +138,7 @@ int main(int argc, char *arg[]) {
 	int status;
 	//ret = waitpid(childpid, &status, WNOHANG); // don't wait
 	ret = waitpid(childpid, &status, 0);
-	std::cerr << "child status: " << WEXITSTATUS(status) << std::endl;
+	fprintf(stderr, "child status: %d\n", WEXITSTATUS(status));
 	if(ret == -1) {
 		fatal_error("wait_pid failed");
 	}

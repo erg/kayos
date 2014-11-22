@@ -1,7 +1,8 @@
 VERSION = 0.0.1
 LIBPATH =
+CC = clang
 CXX = clang++
-CFLAGS = -Wall -Wpedantic -g -std=c++11
+CFLAGS = -Wall -Wpedantic -g
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
 WRITER_LIBS = -lforestdb
@@ -26,7 +27,6 @@ DLL_OBJS = $(PLAF_DLL_OBJS) \
 	src/utils.o
 
 MASTER_HEADERS = src/portable_endian.h \
-	src/endian_types.h \
 	src/io.h \
 	src/utils.h
 
@@ -56,19 +56,22 @@ default:
 	$(MAKE) $(ALL)
 
 kayos-server: $(SERVER_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CXX) -o $(BINDIR)/kayos-server $(CFLAGS) $(INCLUDE_PATHS) $(SERVER_LIBS) $(SERVER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-server $(CFLAGS) $(INCLUDE_PATHS) $(SERVER_LIBS) $(SERVER_OBJS)
 
 kayos-writer: $(WRITER_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CXX) -o $(BINDIR)/kayos-writer $(CFLAGS) $(INCLUDE_PATHS) $(WRITER_LIBS) $(WRITER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-writer $(CFLAGS) $(INCLUDE_PATHS) $(WRITER_LIBS) $(WRITER_OBJS)
 
 kayos-client: $(CLIENT_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CXX) -o $(BINDIR)/kayos-client $(CFLAGS) $(INCLUDE_PATHS) $(CLIENT_LIBS) $(CLIENT_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-client $(CFLAGS) $(INCLUDE_PATHS) $(CLIENT_LIBS) $(CLIENT_OBJS)
 
 src/kayos_master.h.gch: src/kayos_master.h $(MASTER_HEADERS)
-	$(TOOLCHAIN_PREFIX)$(CXX) -c -x c++-header $(CFLAGS) -o $@ $<
+	$(TOOLCHAIN_PREFIX)$(CC) -c -x c++-header $(CFLAGS) -o $@ $<
 
-%.o: %.cc src/kayos_master.h.gch
-	$(TOOLCHAIN_PREFIX)$(CXX) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
+#%.o: %.cc src/kayos_master.h.gch
+#	$(TOOLCHAIN_PREFIX)$(CXX) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
+
+%.o: %.c src/kayos_master.h.gch
+	$(TOOLCHAIN_PREFIX)$(CC) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
 
 directories: $(BINDIR) $(BINDIR_TESTS)
 
