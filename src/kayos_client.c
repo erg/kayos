@@ -6,7 +6,7 @@
 #include "io.h"
 #include "utils.h"
 
-int handle_buffer(char *buffer, ssize_t len) {
+int handle_buffer(const char *buffer, ssize_t len) {
 	int stop = 0;
 
 	if(!strncmp(buffer, "exit", len))
@@ -22,12 +22,15 @@ void client_loop() {
 		fprintf(stderr, "client: loop head\n");
 		ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
 		if(nbytes == -1) {
+			fatal_error("client safe_read");
+		} else if(nbytes == 0) {
 			fprintf(stderr, "client: client dc!\n");
+			break;
 		}
-
 		fprintf(stderr, "client: got %zd bytes, buffer: %s\n", nbytes, buffer);
-		named_hexdump("client got:", (unsigned char *)buffer, nbytes);
-		printf("ok\n");
+		named_hexdump(stderr, "client got", buffer, nbytes);
+		fprintf(stdout, "ok\n");
+		fflush(stdin);
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
 }

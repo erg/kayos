@@ -22,9 +22,13 @@ void writer_loop() {
 		char buffer[4096];
 		fprintf(stderr, "writer: loop head\n");
 		ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
+		if(nbytes == 0)
+			fprintf(stderr, "writer: client disconnected\n");
+		else if(nbytes == -1) {
+			fatal_error("writer: safe_read");
+		}
 		fprintf(stderr, "writer: got %zd bytes, buffer: %s\n", nbytes, buffer);
-		fprintf(stderr, " safe_read errno: %d\n", errno);
-		printf("ok\n");
+		fprintf(stdout, "ok\n");
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
 }

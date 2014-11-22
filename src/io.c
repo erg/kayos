@@ -7,11 +7,10 @@
 ssize_t safe_read(int fd, char* data, ssize_t size) {
 	ssize_t nbytes = read(fd, data, size-1);
 	if (nbytes < 0) {
-		if (errno == EINTR) {
+		if (errno == EINTR)
 			return safe_read(fd, data, size-1);
-		} else {
-			fatal_error("error reading fd");
-		}
+		else
+			return -1;
 	}
 	data[nbytes] = 0;
 	return nbytes;
