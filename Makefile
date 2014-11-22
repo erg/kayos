@@ -26,8 +26,7 @@ DLL_OBJS = $(PLAF_DLL_OBJS) \
 	src/io.o \
 	src/utils.o
 
-MASTER_HEADERS = src/portable_endian.h \
-	src/io.h \
+MASTER_HEADERS = src/io.h \
 	src/utils.h
 
 SERVER_HEADERS = $(HEADERS) \
