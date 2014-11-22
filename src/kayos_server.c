@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -23,15 +24,14 @@ void safe_pipe(int fd[2]) {
 
 // XXX: macosx says dup2 can return EINTR, linux maybe can
 // retries on EINTR
-// makes another handle from fildes as handle fildes2
+// makes another handle from fildes with ordinal filedes2
 // and closes existing fildes2 if open
 int safe_dup2(int fildes, int fildes2) {
 	int ret = dup2(fildes, fildes2);
 	if(ret == -1) {
 		if(errno == EINTR)
 			return safe_dup2(fildes, fildes2);
-		else
-			return -1;
+		return -1;
 	}
 	return ret;
 }
@@ -40,6 +40,7 @@ int safe_dup2(int fildes, int fildes2) {
 // e.g. a pipe that the parent can write to might become the new stdin for the child
 // don't replace stdin/stdout if value is -1
 void redirect_child_stdin_stdout(int new_stdin, int new_stdout) {
+	printf("redirect_child_stdin_stdout %d, %d\n", new_stdin, new_stdout);
 	if(new_stdin != -1 && safe_dup2(new_stdin, STDIN_FILENO) != STDIN_FILENO)
 		fatal_error("child: failed stdin setup");
 	if(new_stdout != -1 && safe_dup2(new_stdout, STDOUT_FILENO) != STDOUT_FILENO)
@@ -112,6 +113,11 @@ int main(int argc, char *arg[]) {
 		if(new_fd == -1)
 			fatal_error("accept failed");
 
+		int optval = 1;
+		ret = setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval));
+		if(ret == -1)
+			fatal_error("setsockopt SO_REUSEPORT failed");
+
 		fprintf(stderr, "client connected! fd: %d\n", new_fd);
 		pid_t clientpid;
 		if((clientpid = fork()) == -1)
@@ -120,20 +126,17 @@ int main(int argc, char *arg[]) {
 		if(clientpid == 0) {
 			// Runs in child process
 			// new stdin is socket, stdout is kayos-writer pipe handle
-			//redirect_child_stdin_stdout(new_fd, fd_p2w[1]);
-			redirect_child_stdin_stdout(new_fd, new_fd);
+			redirect_child_stdin_stdout(new_fd, fd_p2w[1]);
 			execvp("bin/kayos-client", 0);
 			fatal_error("execvp kayos-client failed");
 			// XXX: control passes to kayos-client main()
 		} else {
 			// Runs in parent process
-			// close network socket
 			close(new_fd);
 		}
 	} while(1);
 
 	int status;
-	//ret = waitpid(writerpid, &status, WNOHANG); // don't wait
 	ret = waitpid(writerpid, &status, 0);
 	fprintf(stderr, "server: writer status: %d\n", WEXITSTATUS(status));
 	if(ret == -1) {

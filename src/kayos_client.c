@@ -29,14 +29,20 @@ void client_loop() {
 		}
 		fprintf(stderr, "client: got %zd bytes, buffer: %s\n", nbytes, buffer);
 		named_hexdump(stderr, "client got", buffer, nbytes);
-		fprintf(stdout, "ok\n");
-		fflush(stdin);
+
+		ssize_t written = 0;
+		ssize_t ret = safe_write(0, "ok\n", 3, &written);
+
+		fprintf(stdout, "hello writer from client\r\n");
+		fflush(stdout);
+
 		stop = handle_buffer(buffer, sizeof(buffer));
 	} while(!stop);
 }
 
 int main(int argc, char *arg[]) {
-	client_loop();
+	int client_out = dup(STDIN_FILENO);
+	client_loop(client_out);
 	fprintf(stderr, "client exiting\n");
 	return 0;
 }
