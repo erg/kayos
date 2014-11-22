@@ -26,6 +26,7 @@ void client_loop() {
 		fprintf(stderr, "client: loop head\n");
 		nbytes = safe_read(0, buffer, sizeof(buffer));
 		if(nbytes == -1) {
+			fprintf(stderr, "client: client error!\n");
 			fatal_error("client safe_read");
 		} else if(nbytes == 0) {
 			fprintf(stderr, "client: client dc!\n");

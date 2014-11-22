@@ -22,7 +22,7 @@ void safe_pipe(int fd[2]) {
 		fatal_error("pipe failed");
 }
 
-// XXX: macosx says dup2 can return EINTR, linux maybe can
+// XXX: macosx says dup2 can return EINTR, linux maybe does?
 // retries on EINTR
 // makes another handle from fildes with ordinal filedes2
 // and closes existing fildes2 if open
