@@ -20,59 +20,65 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *buffer,
 	uint64_t remaining = len;
 	do {
 		ptr = command = buffer_skip_whitespace(ptr, end - ptr);
-		if(!ptr) break;
+		// at least need a command
+		if(!command) return 0;
 		ptr = command_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
-		*command_end = '\0';
-		fprintf(stderr, "command: %s\n", command);
-		ptr = key = buffer_skip_whitespace(ptr, end - ptr);
-		if(!ptr) break;
-		ptr = key_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
-		if(!ptr) break;
-		*key_end = '\0';
-		fprintf(stderr, "key: %s\n", key);
-
 		if(!memcmp(command, "set", 3)) {
-			ptr = val = buffer_skip_whitespace(ptr, end - ptr);
-			if(!ptr) break;
-			ptr = val_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
-			if(!ptr) break;
-			*val_end = '\0';
+			ptr = key = buffer_skip_whitespace(ptr, end - ptr);
+			ptr = key_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
 
-			named_hexdump(stderr, "after tokenization", buffer, 32);
-
-			fprintf(stderr, "setting key: %s, val: %s\n", key, val);
-			status = fdb_set_kv(db, key, strlen(key), val, strlen(val));
-			if(status != FDB_RESULT_SUCCESS)
-				fatal_error("fdb_set_kv");
-			status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
-			if(status != FDB_RESULT_SUCCESS)
-				fatal_error("fdb_commit");
+			// at least need a key to set, value is optional
+			if(key) {
+				ptr = val = buffer_skip_whitespace(ptr, end - ptr);
+				ptr = val_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+				//fprintf(stderr, "setting key: %s, val: %s\n", key, val);
+				status = fdb_set_kv(db, key, key_end - key, val, val_end - val);
+				if(status != FDB_RESULT_SUCCESS) {
+					fatal_error("fdb_set_kv");
+				}
+				status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
+				if(status != FDB_RESULT_SUCCESS)
+					fatal_error("fdb_commit");
+			}
 		} else if(!memcmp(command, "get", 3)) {
-			void *rvalue;
-			size_t rvalue_len;
-			status = fdb_get_kv(db, key, strlen(key), &rvalue, &rvalue_len);
-			if(status == FDB_RESULT_KEY_NOT_FOUND)
-				fprintf(stderr, "FDB_RESULT_KEY_NOT_FOUND, status: %d\n", status);
-			else if(status == FDB_RESULT_SUCCESS) {
-				fprintf(stderr, "FDB_RESULT_SUCCESS, status: %d\n", status);
-				fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
-				if(rvalue)
-					free(rvalue);
+			ptr = key = buffer_skip_whitespace(ptr, end - ptr);
+			ptr = key_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+			if(key) {
+				fprintf(stderr, "getting key\n");
+				void *rvalue;
+				size_t rvalue_len;
+				fprintf(stderr, "in get\n");
+				status = fdb_get_kv(db, key, key_end - key, &rvalue, &rvalue_len);
+				if(status == FDB_RESULT_KEY_NOT_FOUND)
+					fprintf(stderr, "FDB_RESULT_KEY_NOT_FOUND, status: %d\n", status);
+				else if(status == FDB_RESULT_SUCCESS) {
+					fprintf(stderr, "FDB_RESULT_SUCCESS, status: %d\n", status);
+					fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
+					if(rvalue)
+						free(rvalue);
+				}
 			}
 		} else if(!memcmp(command, "delete", 6)) {
-			fprintf(stderr, "deleting key: %s\n", key);
-			status = fdb_del_kv(db, key, strlen(key));
-			fprintf(stderr, "delete status: %d\n", status);
-			if(status != FDB_RESULT_SUCCESS)
-				fatal_error("fdb_del_kv");
-			status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
-			if(status != FDB_RESULT_SUCCESS)
-				fatal_error("fdb_commit");
-		} else
-			fprintf(stderr, "unknown command: %s\n", command);
+			ptr = key = buffer_skip_whitespace(ptr, end - ptr);
+			ptr = key_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+			if(key) {
+				fprintf(stderr, "deleting key\n");
+				status = fdb_del_kv(db, key, key_end - key);
+				fprintf(stderr, "delete status: %d\n", status);
+				if(status != FDB_RESULT_SUCCESS)
+					fatal_error("fdb_del_kv");
+				status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
+				if(status != FDB_RESULT_SUCCESS)
+					fatal_error("fdb_commit");
+			}
+		} else {
+			fprintf(stderr, "unknown command\n");
+		}
 
+		ptr = command = buffer_skip_whitespace(ptr, end - ptr);
+		fprintf(stderr, "compacting\n");
 		remaining = compact_buffer(buffer, len, ptr);
-		fprintf(stderr, "remaining: %d\n", remaining);
+		fprintf(stderr, "remaining: %llu\n", remaining);
 	} while(remaining > 0);
 	if(!ptr)
 		return 0;

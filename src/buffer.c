@@ -1,6 +1,7 @@
 #include "buffer.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 // Binary protocol: opcode, 8byte length
@@ -61,8 +62,12 @@ end:
 uint64_t compact_buffer(char *buffer, uint64_t len, char *ptr) {
     uint64_t diff = ptr - buffer;
     uint64_t filled = len - diff;
+	if(!ptr) {
+		memset(buffer, 0, len);
+		return 0;
+	}
+	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %d, diff %d\n", buffer, ptr, filled, diff);
     memmove(buffer, ptr, filled);
 	memset(buffer + filled, 0, diff);
-	//printf("memsetting: buffer %p, ptr %p, filled %d, diff %d\n", buffer, ptr, filled, diff);
 	return filled;
 }
