@@ -5,13 +5,15 @@ CXX = clang++
 CFLAGS = -Wall -Wpedantic -g -std=c99
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
-WRITER_LIBS = -lforestdb
-CLIENT_LIBS =
+PRODUCER_CLIENT_LIBS = -lforestdb
+CONSUMER_CLIENT_LIBS = -lforestdb
+TEST_BUFFER_LIBS =
 INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./include
+TEST_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tests
 
 MKDIR_P = mkdir -p
 BINDIR = bin
-BINDIR_TESTS = bin-test
+BINDIR_TESTS = bin-tests
 LIBBASE = kayos
 
 ifdef DEBUG
@@ -23,33 +25,33 @@ endif
 LIBNAME = $(DLL_PREFIX)$(LIBBASE)$(DLL_SUFFIX)$(DLL_EXTENSION)
 
 DLL_OBJS = $(PLAF_DLL_OBJS) \
+	src/buffer.o \
 	src/io.o \
 	src/utils.o
 
-MASTER_HEADERS = src/io.h \
+MASTER_HEADERS = src/buffer.h \
+	src/io.h \
 	src/utils.h
 
-SERVER_HEADERS = $(HEADERS) \
-	src/kayos_server.h
-
-WRITER_HEADERS = $(HEADERS) \
-	src/kayos_writer.h
-
-CLIENT_HEADERS = $(HEADERS) \
-	src/kayos_client.h
+SERVER_HEADERS = $(MASTER_HEADERS)
+PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS)
+CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS)
 
 SERVER_OBJS = $(DLL_OBJS) \
 	src/kayos_server.o
 
-WRITER_OBJS = $(DLL_OBJS) \
-	src/kayos_writer.o
+PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/kayos_producer_client.o
 
-CLIENT_OBJS = $(DLL_OBJS) \
-	src/kayos_client.o
+CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/kayos_consumer_client.o
 
-.PHONY: kayos-server kayos-writer kayos-client clean directories
+TEST_BUFFER_OBJS = $(DLL_OBJS) \
+	tests/test_buffer.o
 
-ALL = directories kayos-server kayos-writer kayos-client
+.PHONY: kayos-server kayos-producer-client kayos-consumer-client test-buffer clean directories
+
+ALL = directories kayos-server kayos-producer-client kayos-consumer-client test-buffer
 
 default:
 	$(MAKE) $(ALL)
@@ -57,11 +59,14 @@ default:
 kayos-server: $(SERVER_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-server $(CFLAGS) $(INCLUDE_PATHS) $(SERVER_LIBS) $(SERVER_OBJS)
 
-kayos-writer: $(WRITER_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-writer $(CFLAGS) $(INCLUDE_PATHS) $(WRITER_LIBS) $(WRITER_OBJS)
+kayos-producer-client: $(PRODUCER_CLIENT_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-producer-client $(CFLAGS) $(INCLUDE_PATHS) $(PRODUCER_CLIENT_LIBS) $(PRODUCER_CLIENT_OBJS)
 
-kayos-client: $(CLIENT_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-client $(CFLAGS) $(INCLUDE_PATHS) $(CLIENT_LIBS) $(CLIENT_OBJS)
+kayos-consumer-client: $(CONSUMER_CLIENT_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-consumer-client $(CFLAGS) $(INCLUDE_PATHS) $(CONSUMER_CLIENT_LIBS) $(CONSUMER_CLIENT_OBJS)
+
+test-buffer: $(TEST_BUFFER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/test-buffer $(CFLAGS) $(TEST_INCLUDE_PATHS) $(TEST_BUFFER_LIBS) $(TEST_BUFFER_OBJS)
 
 %.o: %.c
 	$(TOOLCHAIN_PREFIX)$(CC) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<

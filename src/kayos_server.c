@@ -1,5 +1,3 @@
-#include "kayos_server.h"
-
 #include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -15,7 +13,8 @@
 #include "io.h"
 #include "utils.h"
 
-const char SERVER_PORT[] = "9890";
+const char SERVER_PRODUCERS_PORT[] = "9890";
+const char SERVER_CONSUMERS_PORT[] = "9891";
 
 // fills in stdin,stdout pair
 void safe_pipe(int fd[2]) {
@@ -63,39 +62,69 @@ void init_ipc() {
 		fatal_error("mkdir ./ipc failed");
 }
 
-int init_network() {
+int init_socket(const char *servname) {
 	int ret;
-	struct addrinfo hints, *res;
-	int sockfd;
+	struct addrinfo addrinfo, *res;
+	int sock_fd;
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-	getaddrinfo(NULL, SERVER_PORT, &hints, &res);
+	memset(&addrinfo, 0, sizeof(addrinfo));
+	addrinfo.ai_family = AF_UNSPEC;
+	addrinfo.ai_socktype = SOCK_STREAM;
+	addrinfo.ai_flags = AI_PASSIVE;
+	getaddrinfo(NULL, servname, &addrinfo, &res);
 
-	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if(sockfd == -1)
+	sock_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	if(sock_fd == -1)
 		fatal_error("socket failed");
 
 	int optval = 1;
-	ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+	ret = setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 	if(ret == -1)
 		fatal_error("setsockopt SO_REUSEPORT failed");
 
-	ret = bind(sockfd, res->ai_addr, res->ai_addrlen);
+	ret = bind(sock_fd, res->ai_addr, res->ai_addrlen);
 	if(ret == -1)
 		fatal_error("bind failed");
 
-	ret = listen(sockfd, 16);
+	ret = listen(sock_fd, 16);
 	if(ret == -1)
 		fatal_error("listen failed");
-	return sockfd;
+	return sock_fd;
+}
+
+int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *addr_size) {
+	int new_fd = accept(sockfd, (struct sockaddr *)their_addr, addr_size);
+	if(new_fd == -1)
+		fatal_error("accept failed");
+
+	int optval = 1;
+	int ret = setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval));
+	if(ret == -1)
+		fatal_error("setsockopt SO_REUSEPORT failed");
+	return new_fd;
+}
+
+void fork_socket_handler(int socket_fd, int parent_child_pipe, const char *binary_path) {
+	pid_t clientpid;
+	if((clientpid = fork()) == -1)
+		fatal_error("fork failed");
+
+	if(clientpid == 0) {
+		// Runs in child process
+		// new stdin is socket, stdout is kayos-writer pipe handle
+		redirect_child_stdin_stdout(socket_fd, parent_child_pipe);
+		execvp(binary_path, 0);
+		fatal_error("execvp failed");
+		// XXX: control passes to child main()
+	} else {
+		// Runs in parent process
+		close(socket_fd);
+	}
 }
 
 int main(int argc, char *arg[]) {
+	/*
 	int ret = 0;
-
 	// pipes for kayos-writer child
 	int fd_p2w[2];
 	int fd_w2p[2];
@@ -121,38 +150,43 @@ int main(int argc, char *arg[]) {
 		close(fd_p2w[0]);
 		close(fd_w2p[1]);
 	}
+	*/
 
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);
-	int sockfd = init_network();
+	int producers_fd = init_socket(SERVER_PRODUCERS_PORT);
+	int consumers_fd = init_socket(SERVER_CONSUMERS_PORT);
+	int max_fd = consumers_fd;
+	int client_fd = 0;
+	if(producers_fd > consumers_fd)
+		max_fd = producers_fd;
 	do {
-		int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-		if(new_fd == -1)
-			fatal_error("accept failed");
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		FD_SET(producers_fd, &readfds);
+		FD_SET(consumers_fd, &readfds);
 
-		int optval = 1;
-		ret = setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval));
-		if(ret == -1)
-			fatal_error("setsockopt SO_REUSEPORT failed");
+		int ret = select(max_fd + 1, &readfds, 0, 0, 0);
+		if(ret == -1) {
+			if(errno == EINTR)
+				continue;
+			else
+				fatal_error("select");
+		}
 
-		fprintf(stderr, "client connected! fd: %d\n", new_fd);
-		pid_t clientpid;
-		if((clientpid = fork()) == -1)
-			fatal_error("fork failed");
-
-		if(clientpid == 0) {
-			// Runs in child process
-			// new stdin is socket, stdout is kayos-writer pipe handle
-			redirect_child_stdin_stdout(new_fd, fd_p2w[1]);
-			execvp("bin/kayos-client", 0);
-			fatal_error("execvp kayos-client failed");
-			// XXX: control passes to kayos-client main()
-		} else {
-			// Runs in parent process
-			close(new_fd);
+		if(FD_ISSET(producers_fd, &readfds)) {
+			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
+			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client");
+		}
+		if(FD_ISSET(consumers_fd, &readfds)) {
+			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
+			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client");
 		}
 	} while(1);
 
+	/*
 	int status;
 	ret = waitpid(writerpid, &status, 0);
 	fprintf(stderr, "server: writer status: %d\n", WEXITSTATUS(status));
@@ -163,6 +197,7 @@ int main(int argc, char *arg[]) {
 	close(fd_p2w[1]);
 	//cleanup child(stdout) to parent pipe
 	close(fd_w2p[0]);
+	*/
 
 	return 0;
 }

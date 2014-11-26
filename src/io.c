@@ -16,20 +16,19 @@ ssize_t safe_read(int fd, char* data, ssize_t size) {
 	return nbytes;
 }
 
-ssize_t safe_write_impl(int fd, const void* data, ssize_t size, ssize_t *written) {
-	ssize_t nbytes = write(fd, (char*)data + *written, size - *written);
+ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written) {
+	ssize_t nbytes = write(fd, (char*)data + written, size - written);
 	if(nbytes == -1 && errno != EINTR) {
-		return -1;
+		return written;
 	} else if(nbytes == size) {
-		*written += nbytes;
-		return *written;
+		written += nbytes;
+		return written;
 	} else {
-		*written += nbytes;
-		return safe_write_impl(fd, (char*)data + *written, size - *written, written);
+		written += nbytes;
+		return safe_write_impl(fd, (char*)data + written, size - written, written);
 	}
 }
 
-ssize_t safe_write(int fd, const void* data, ssize_t size, ssize_t *written) {
-	*written = 0;
-	return safe_write_impl(fd, data, size, written);
+ssize_t safe_write(int fd, const void* data, size_t size) {
+	return safe_write_impl(fd, data, size, 0);
 }
