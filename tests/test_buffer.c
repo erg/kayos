@@ -58,16 +58,49 @@ int test_buffer_skip_until() {
 	return sum;
 }
 
+int test_buffer_find_eol() {
+	int sum = 0;
+
+	return sum;
+}
+
+int test_buffer_compact() {
+	int sum = 0;
+	char *ptr;
+	
+	char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+	int len = strlen(alphabet);
+
+	ptr = buffer_take_while(alphabet, strlen(alphabet), "abc", 3);
+	if(ptr - alphabet != 3) sum++;
+	printf("ptr: %s\n", ptr);
+
+	int filled  = compact_buffer(alphabet, len, ptr);
+
+	if(filled != 23) sum++;
+	printf("strlen: %ld, alphabet: %s\n", strlen(alphabet), alphabet);
+
+	return sum;
+}
+
 
 int main(int argc, char *argv[]) {
 	int sum;
 	sum = test_buffer_take_while();
 	if(sum != 0)
-		printf("buffer tests failed!\n");
+		printf("test_buffer_take_while tests failed!\n");
 
 	sum = test_buffer_skip_until();
 	if(sum != 0)
-		printf("buffer tests failed!\n");
-	
+		printf("test_buffer_skip_until tests failed!\n");
+
+	sum = test_buffer_find_eol();
+	if(sum != 0)
+		printf("test_buffer_find_eol tests failed!\n");
+
+	sum = test_buffer_compact();
+	if(sum != 0)
+		printf("test_buffer_compact tests failed!\n");
+
 	return 0;
 }

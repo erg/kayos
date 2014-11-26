@@ -5,6 +5,7 @@
 
 #include <forestdb.h>
 
+#include "buffer.h"
 #include "io.h"
 #include "utils.h"
 
@@ -14,32 +15,30 @@ const size_t BUFFER_LENGTH = 1024;
 ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *buffer, size_t len) {
 	fdb_status status;
 	char *ptr = buffer;
-	size_t remaining = len;
+	char *end = buffer + len;
+	char *command, *command_end, *key, *key_end, *val, *val_end;
+	uint64_t remaining = len;
 	do {
-		size_t count = strcspn(ptr, "\r\n");
-		// no newline, try again after we get more chars
-		if(count == len)
-			break;
+		ptr = command = buffer_skip_whitespace(ptr, end - ptr);
+		if(!ptr) break;
+		ptr = command_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+		*command_end = '\0';
+		fprintf(stderr, "command: %s\n", command);
+		ptr = key = buffer_skip_whitespace(ptr, end - ptr);
+		if(!ptr) break;
+		ptr = key_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+		if(!ptr) break;
+		*key_end = '\0';
+		fprintf(stderr, "key: %s\n", key);
 
-		// skip \r\n
-		if(count == 0 && remaining > 0) {
-			ptr++;
-			continue;
-		}
-			
-		char *sep = " \t";
-		char *brkt, *command, *key, *val;
+		if(!memcmp(command, "set", 3)) {
+			ptr = val = buffer_skip_whitespace(ptr, end - ptr);
+			if(!ptr) break;
+			ptr = val_end = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+			if(!ptr) break;
+			*val_end = '\0';
 
-		command = strtok_r(ptr, sep, &brkt);
-		if(!command)
-			continue;
-		key = strtok_r(0, sep, &brkt);
-		if(!key)
-			continue;
-		if(!strcmp(command, "set")) {
-			val = strtok_r(0, sep, &brkt);
-			if(!val)
-				continue;
+			named_hexdump(stderr, "after tokenization", buffer, 32);
 
 			fprintf(stderr, "setting key: %s, val: %s\n", key, val);
 			status = fdb_set_kv(db, key, strlen(key), val, strlen(val));
@@ -48,7 +47,7 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *buffer,
 			status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
 			if(status != FDB_RESULT_SUCCESS)
 				fatal_error("fdb_commit");
-		} else if(!strcmp(command, "get")) {
+		} else if(!memcmp(command, "get", 3)) {
 			void *rvalue;
 			size_t rvalue_len;
 			status = fdb_get_kv(db, key, strlen(key), &rvalue, &rvalue_len);
@@ -60,7 +59,7 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *buffer,
 				if(rvalue)
 					free(rvalue);
 			}
-		} else if(!strcmp(command, "delete")) {
+		} else if(!memcmp(command, "delete", 6)) {
 			fprintf(stderr, "deleting key: %s\n", key);
 			status = fdb_del_kv(db, key, strlen(key));
 			fprintf(stderr, "delete status: %d\n", status);
@@ -71,31 +70,32 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *buffer,
 				fatal_error("fdb_commit");
 		} else
 			fprintf(stderr, "unknown command: %s\n", command);
-	} while(1);
 
-	size_t diff = ptr - (char*)buffer;
-
-	memmove(buffer, (char*)buffer + diff, diff);
-
-	return 0;
+		remaining = compact_buffer(buffer, len, ptr);
+		fprintf(stderr, "remaining: %d\n", remaining);
+	} while(remaining > 0);
+	if(!ptr)
+		return 0;
+	return remaining;
 }
 
-void writer_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
+void producer_client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 	char buffer[BUFFER_LENGTH];
 	do {
-		fprintf(stderr, "writer: loop head\n");
+		fprintf(stderr, "producer_client: loop head\n");
 		ssize_t nbytes = safe_read(0, buffer, sizeof(buffer));
 		if(nbytes == 0) {
-			fprintf(stderr, "writer: client disconnected\n");
+			fprintf(stderr, "producer_client: client disconnected\n");
 			break;
 		} else if(nbytes == -1) {
-			fatal_error("writer: safe_read");
+			fatal_error("producer_client: safe_read");
 		}
-		named_hexdump(stderr, "writer got", buffer, nbytes);
-		handle_buffer(dbfile, db, buffer, sizeof(buffer));
+		named_hexdump(stderr, "producer_client got", buffer, nbytes);
+		handle_buffer(dbfile, db, buffer, nbytes);
 
-		ssize_t ret = safe_write(0, "ok\n", 3);
-		(void) ret;
+		//ssize_t ret = safe_write(1, "ok\n", 3);
+		//if(ret != 3)
+			//fatal_error("producer_client safe_write failed");
 	} while(1);
 }
 
@@ -113,7 +113,7 @@ int main(int argc, char *arg[]) {
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_kvs_open_default failed");
 
-	writer_loop(dbfile, db);
+	producer_client_loop(dbfile, db);
 
 	// cleanup forestdb
 	fdb_kvs_close(db);
