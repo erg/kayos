@@ -12,21 +12,21 @@
 //char *safe_strtok_r(char *str, const char *sep, char **lasts) {
 //}
 
-char *buffer_skip_tabspace(char *buffer, uint64_t buffer_length) {
+char *buffer_skip_tabspace(char *buffer, size_t buffer_length) {
 	return buffer_take_while(buffer, buffer_length, " \t", 2);
 }
 
-char *buffer_skip_whitespace(char *buffer, uint64_t buffer_length) {
+char *buffer_skip_whitespace(char *buffer, size_t buffer_length) {
 	return buffer_take_while(buffer, buffer_length, " \t\r\n", 4);
 }
 
-char *buffer_find_eol(char *buffer, uint64_t buffer_length) {
+char *buffer_find_eol(char *buffer, size_t buffer_length) {
 	char *end = buffer + buffer_length;
 	char *ptr = buffer_skip_until(buffer, buffer_length, "\r\n", 2);
 	return buffer_take_while(ptr, end - ptr, "\r\n", 2);
 }
 
-char *buffer_token(char *buffer, uint64_t buffer_length, char **next) {
+char *buffer_token(char *buffer, size_t buffer_length, char **next) {
 	if(!buffer && !*next) {
 		return 0;
 	}
@@ -45,10 +45,10 @@ char *buffer_token(char *buffer, uint64_t buffer_length, char **next) {
 	return ptr;
 }
 
-char *buffer_take_while(char *buffer, uint64_t buffer_length, char *take, uint64_t take_length) {
+char *buffer_take_while(char *buffer, size_t buffer_length, char *take, size_t take_length) {
 	if(!buffer)
 		return 0;
-	uint64_t i = 0, j = 0;
+	size_t i = 0, j = 0;
 
 	for(i = 0; i < buffer_length; i++) {
 		for(j = 0; j < take_length; j++) {
@@ -64,10 +64,10 @@ buffer_next:
 	return buffer + i;
 }
 
-char *buffer_skip_until(char *buffer, uint64_t buffer_length, char *until, uint64_t until_length) {
+char *buffer_skip_until(char *buffer, size_t buffer_length, char *until, size_t until_length) {
 	if(!buffer)
 		return 0;
-	uint64_t i = 0, j = 0;
+	size_t i = 0, j = 0;
 
 	for(i = 0; i < buffer_length; i++) {
 		for(j = 0; j < until_length; j++) {
@@ -82,14 +82,14 @@ end:
 }
 
 // pointer to buffer head, length of entire buffer, pointer to last processed char
-uint64_t compact_buffer(char *buffer, uint64_t len, char *ptr) {
-    uint64_t diff = ptr - buffer;
-    uint64_t filled = len - diff;
+size_t compact_buffer(char *buffer, size_t len, char *ptr) {
+    size_t diff = ptr - buffer;
+    size_t filled = len - diff;
 	if(!ptr) {
 		memset(buffer, 0, len);
 		return 0;
 	}
-	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %llu, diff %llu\n", buffer, ptr, filled, diff);
+	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %zu, diff %zu\n", buffer, ptr, filled, diff);
     memmove(buffer, ptr, filled);
 	memset(buffer + filled, 0, diff);
 	return filled;
