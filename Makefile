@@ -34,16 +34,20 @@ MASTER_HEADERS = src/buffer.h \
 	src/utils.h
 
 SERVER_HEADERS = $(MASTER_HEADERS)
-PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS)
-CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS)
+PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS) \
+	src/kayos_common.h
+CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS) \
+	src/kayos_common.h
 
 SERVER_OBJS = $(DLL_OBJS) \
 	src/kayos_server.o
 
 PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/kayos_common.o \
 	src/kayos_producer_client.o
 
 CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/kayos_common.o \
 	src/kayos_consumer_client.o
 
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
