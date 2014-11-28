@@ -9,18 +9,40 @@
 // HTTP protocol
 // Long poll
 
+//char *safe_strtok_r(char *str, const char *sep, char **lasts) {
+//}
+
 char *buffer_skip_tabspace(char *buffer, uint64_t buffer_length) {
 	return buffer_take_while(buffer, buffer_length, " \t", 2);
 }
 
 char *buffer_skip_whitespace(char *buffer, uint64_t buffer_length) {
-	return buffer_take_while(buffer, buffer_length, " \t\r\n\0", 5);
+	return buffer_take_while(buffer, buffer_length, " \t\r\n", 4);
 }
 
 char *buffer_find_eol(char *buffer, uint64_t buffer_length) {
 	char *end = buffer + buffer_length;
 	char *ptr = buffer_skip_until(buffer, buffer_length, "\r\n", 2);
 	return buffer_take_while(ptr, end - ptr, "\r\n", 2);
+}
+
+char *buffer_token(char *buffer, uint64_t buffer_length, char **next) {
+	if(!buffer && !*next) {
+		return 0;
+	}
+	char *end = buffer + buffer_length;
+	char *ptr = buffer_skip_whitespace(buffer, buffer_length);
+	char *found = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+	fprintf(stderr, "end: %p\n", end);
+	fprintf(stderr, "ptr: %p\n", ptr);
+	fprintf(stderr, "found: %p\n", found);
+	if(found)
+		*found = '\0';
+	if(found < end)
+		*next = found + 1;
+	else
+		*next = 0;
+	return ptr;
 }
 
 char *buffer_take_while(char *buffer, uint64_t buffer_length, char *take, uint64_t take_length) {
@@ -59,6 +81,7 @@ end:
 	return buffer + i;
 }
 
+// pointer to buffer head, length of entire buffer, pointer to last processed char
 uint64_t compact_buffer(char *buffer, uint64_t len, char *ptr) {
     uint64_t diff = ptr - buffer;
     uint64_t filled = len - diff;
@@ -66,7 +89,7 @@ uint64_t compact_buffer(char *buffer, uint64_t len, char *ptr) {
 		memset(buffer, 0, len);
 		return 0;
 	}
-	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %d, diff %d\n", buffer, ptr, filled, diff);
+	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %llu, diff %llu\n", buffer, ptr, filled, diff);
     memmove(buffer, ptr, filled);
 	memset(buffer + filled, 0, diff);
 	return filled;

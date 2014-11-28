@@ -83,6 +83,30 @@ int test_buffer_compact() {
 	return sum;
 }
 
+int test_buffer_token() {
+	int sum = 0;
+	char *ptr;
+	
+	char alphabet[] = "  ab  cd  e  ";
+	char *next = alphabet;
+	char *end = alphabet + strlen(alphabet);
+	int len = strlen(alphabet);
+
+	ptr = buffer_token(alphabet, end - alphabet, &next);
+	if(next - alphabet != 5) sum++;
+	printf("ptr: %s\n", ptr);
+
+	ptr = buffer_token(next, end - next, &next);
+	printf("ptr: %s\n", ptr);
+
+	ptr = buffer_token(next, end - next, &next);
+	printf("ptr: %s\n", ptr);
+	ptr = buffer_token(next, end - next, &next);
+	printf("ptr: %s\n", ptr);
+	ptr = buffer_token(next, end - next, &next);
+	printf("ptr: %s\n", ptr);
+	return sum;
+}
 
 int main(int argc, char *argv[]) {
 	int sum;
@@ -101,6 +125,11 @@ int main(int argc, char *argv[]) {
 	sum = test_buffer_compact();
 	if(sum != 0)
 		printf("test_buffer_compact tests failed!\n");
+
+	printf("test_buffer_token starting!\n");
+	sum = test_buffer_token();
+	if(sum != 0)
+		printf("test_buffer_token tests failed!\n");
 
 	return 0;
 }
