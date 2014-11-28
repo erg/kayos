@@ -33,9 +33,11 @@ char *buffer_token(char *buffer, size_t buffer_length, char **next) {
 	char *end = buffer + buffer_length;
 	char *ptr = buffer_skip_whitespace(buffer, buffer_length);
 	char *found = buffer_skip_until(ptr, end - ptr, " \t\r\n", 4);
+#ifdef DEBUG
 	fprintf(stderr, "end: %p\n", end);
 	fprintf(stderr, "ptr: %p\n", ptr);
 	fprintf(stderr, "found: %p\n", found);
+#endif
 	if(found)
 		*found = '\0';
 	if(found < end)
@@ -89,7 +91,9 @@ size_t compact_buffer(char *buffer, size_t len, char *ptr) {
 		memset(buffer, 0, len);
 		return 0;
 	}
+#ifdef DEBUG
 	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %zu, diff %zu\n", buffer, ptr, filled, diff);
+#endif
     memmove(buffer, ptr, filled);
 	memset(buffer + filled, 0, diff);
 	return filled;

@@ -17,7 +17,7 @@ BINDIR_TESTS = bin-tests
 LIBBASE = kayos
 
 ifdef DEBUG
-	CFLAGS += -DKAYOS_DEBUG
+	CFLAGS += -DDEBUG
 else
 	CFLAGS += -O3
 endif
