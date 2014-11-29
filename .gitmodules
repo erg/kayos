@@ -1,0 +1,6 @@
+[submodule "jansson"]
+	path = jansson
+	url = https://github.com/akheron/jansson.git
+[submodule "forestdb"]
+	path = forestdb
+	url = https://github.com/couchbaselabs/forestdb.git
