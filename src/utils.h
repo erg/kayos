@@ -14,6 +14,8 @@ void micro_sleep(unsigned long long micros);
 void millis_sleep(unsigned long long millis);
 void seconds_sleep(unsigned long long seconds);
 
+void close_stdout();
+
 void fatal_error(const char* msg);
 
 #endif

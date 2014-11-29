@@ -1,5 +1,6 @@
 #include "kayos_common.h"
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,6 +9,7 @@
 #include <forestdb.h>
 
 #include "buffer.h"
+#include "http.h"
 #include "io.h"
 #include "utils.h"
 
@@ -35,7 +37,7 @@ void close_fdb_handles(struct fdb_handles handles) {
 	fdb_close(handles.dbfile);
 }
 
-size_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len) {
+ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len) {
     char *ptr = line;
     char *command = 0, *key = 0, *val = 0, *rest = 0;
     char *end = line + len;
@@ -57,6 +59,12 @@ size_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler 
 
 	ptr = buffer_skip_whitespace(ptr, end - ptr);
 	command = strsep(&ptr, " \t\r\n");
+
+	// HTTP commands are uppercase
+	if(isupper(command[0])) {
+		return handle_http(dbfile, db, handler, command, ptr, end - ptr);
+	}
+
 	ptr = buffer_skip_whitespace(ptr, end - ptr);
 	key = strsep(&ptr, " \t\r\n");
 	size_t key_length = key ? strlen(key) : 0;
@@ -80,8 +88,8 @@ size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handle
 	return 0;
 }
 
-size_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len) {
-    size_t remaining = len;
+ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len) {
+    ssize_t remaining = len;
     char *ptr = buffer;
     char *end = buffer + len;
 	size_t previous_remaining = remaining;
@@ -138,6 +146,12 @@ void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler h
 			named_hexdump(stderr, "consumer_client got", buffer, nbytes);
 #endif
 			remaining = handle_buffer(dbfile, db, handler, buffer, nbytes);
+		}
+
+		// Used for closing HTTP commands.
+		// We returned -1, so we should disconnect the client.
+		if(remaining == -1) {
+			break;
 		}
 	} while(1);
 

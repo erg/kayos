@@ -1,3 +1,5 @@
+#include "producer_client.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -45,11 +47,4 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 	} else {
 		fprintf(stderr, "unknown command: %s\n", command);
 	}
-}
-
-int main(int argc, char *arg[]) {
-	struct fdb_handles handles = init_fdb("./test.fdb");
-	client_loop(handles.dbfile, handles.db, do_forestdb_producer_command);
-	close_fdb_handles(handles);
-	return 0;
 }

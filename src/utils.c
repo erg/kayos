@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 void hexdump(FILE *stream, const char *buf, const uint64_t len) {
     if (!buf)
@@ -76,6 +77,12 @@ void millis_sleep(unsigned long long millis) {
 
 void seconds_sleep(unsigned long long seconds) {
 	nano_sleep(seconds * 1000000000);
+}
+
+// Needed to close sockets if connected.
+void close_stdout() {
+	fflush(stdout);
+	close(1);
 }
 
 void fatal_error(const char* msg) {
