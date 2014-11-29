@@ -12,6 +12,7 @@ Cloning:
 To update dependencies:
 
 ``git submodule update --remote forestdb``
+
 ``git submodule update --remote jansson``
 
 Build forestdb:
