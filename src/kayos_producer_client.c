@@ -15,6 +15,7 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 	if(!strcmp(command, "set")) {
 		// at least need a key to set, value is optional
 		if(key) {
+			fprintf(stdout, "set %s %s\n", key, val);
 			fprintf(stderr, "set %s %s\n", key, val);
 			status = fdb_set_kv(db, key, strlen(key), val, strlen(val));
 #ifdef DEBUG

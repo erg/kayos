@@ -73,21 +73,20 @@ int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *ad
 	return new_fd;
 }
 
-void fork_socket_handler(int socket_fd, int parent_child_pipe, const char *binary_path) {
+void fork_socket_handler(int new_stdin, int new_stdout, const char *binary_path) {
 	pid_t clientpid;
 	if((clientpid = fork()) == -1)
 		fatal_error("fork failed");
 
 	if(clientpid == 0) {
 		// Runs in child process
-		// new stdin is socket, stdout is kayos-writer pipe handle
-		redirect_child_stdin_stdout(socket_fd, parent_child_pipe);
+		redirect_child_stdin_stdout(new_stdin, new_stdout);
 		execvp(binary_path, 0);
 		fatal_error("execvp failed");
 		// XXX: control passes to child main()
 	} else {
 		// Runs in parent process
-		close(socket_fd);
+		close(new_stdin);
 	}
 }
 
