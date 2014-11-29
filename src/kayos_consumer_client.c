@@ -24,7 +24,7 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 				fprintf(stderr, "FDB_RESULT_KEY_NOT_FOUND, status: %d\n", status);
 			else if(status == FDB_RESULT_SUCCESS) {
 				fprintf(stderr, "FDB_RESULT_SUCCESS, status: %d\n", status);
-				fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
+				//fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
 				fprintf(stdout, "got key: %s, val: %s\n", key, rvalue);
 				if(rvalue)
 					free(rvalue);
@@ -39,7 +39,7 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 			status = fdb_iterator_next(iterator, &rdoc);
 			if (status == FDB_RESULT_ITERATOR_FAIL) break;
 			//rdoc->keylen, rdoc->metalen rdoc->bodylen
-			fprintf(stderr, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
+			//fprintf(stderr, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
 			fprintf(stdout, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
 			fflush(stdout);
 

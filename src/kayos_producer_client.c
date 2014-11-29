@@ -16,7 +16,7 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 		// at least need a key to set, value is optional
 		if(key) {
 			fprintf(stdout, "set %s %s\n", key, val);
-			fprintf(stderr, "set %s %s\n", key, val);
+			//fprintf(stderr, "set %s %s\n", key, val);
 			status = fdb_set_kv(db, key, strlen(key), val, strlen(val));
 #ifdef DEBUG
 			fprintf(stderr, "set status: %d\n", status);
@@ -30,7 +30,8 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 		}
 	} else if(!strcmp(command, "delete")) {
 		if(key) {
-			fprintf(stderr, "delete %s\n", key);
+			//fprintf(stderr, "delete %s\n", key);
+			fprintf(stdout, "delete %s\n", key);
 			status = fdb_del_kv(db, key, strlen(key));
 #ifdef DEBUG
 			fprintf(stderr, "delete status: %d\n", status);
