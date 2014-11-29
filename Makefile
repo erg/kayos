@@ -8,7 +8,7 @@ SERVER_LIBS =
 PRODUCER_CLIENT_LIBS = -lforestdb
 CONSUMER_CLIENT_LIBS = -lforestdb
 TEST_BUFFER_LIBS =
-INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./include
+INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb
 TEST_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tests
 
 MKDIR_P = mkdir -p
