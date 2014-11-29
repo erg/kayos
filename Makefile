@@ -35,20 +35,30 @@ MASTER_HEADERS = src/buffer.h \
 
 SERVER_HEADERS = $(MASTER_HEADERS)
 PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS) \
+	src/http.h \
+	src/producer_client.h \
 	src/kayos_common.h
 CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS) \
+	src/http.h \
+	src/consumer_client.h \
 	src/kayos_common.h
 
 SERVER_OBJS = $(DLL_OBJS) \
-	src/kayos_server.o
+	src/kayos_server_main.o
 
 PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/http.o \
 	src/kayos_common.o \
-	src/kayos_producer_client.o
+	src/consumer_client.o \
+	src/producer_client.o \
+	src/kayos_producer_client_main.o
 
 CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
+	src/http.o \
 	src/kayos_common.o \
-	src/kayos_consumer_client.o
+	src/consumer_client.o \
+	src/producer_client.o \
+	src/kayos_consumer_client_main.o
 
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
 	tests/test_buffer.o
