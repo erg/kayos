@@ -5,8 +5,8 @@ CXX = clang++
 CFLAGS = -Wall -Wpedantic -g -std=c99
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
-PRODUCER_CLIENT_LIBS = -lforestdb
-CONSUMER_CLIENT_LIBS = -lforestdb
+PRODUCER_CLIENT_LIBS = -lforestdb -ljansson
+CONSUMER_CLIENT_LIBS = -lforestdb -ljansson
 TEST_BUFFER_LIBS =
 INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb
 TEST_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tests

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include <forestdb.h>
+#include <jansson.h>
 
 #include "kayos_common.h"
 #include "buffer.h"
@@ -40,7 +41,15 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 			if (status == FDB_RESULT_ITERATOR_FAIL) break;
 			//rdoc->keylen, rdoc->metalen rdoc->bodylen
 			//fprintf(stderr, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
-			fprintf(stdout, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
+			json_t *dict = json_object();
+			json_object_set_new(dict, "key", json_string(rdoc->key));
+			json_object_set_new(dict, "meta", json_string(rdoc->meta));
+			json_object_set_new(dict, "body", json_string(rdoc->body));
+			json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
+			char *result = json_dumps(dict, 0);
+			//fprintf(stderr, "%s\n", result);
+			fprintf(stdout, "%s\n", result);
+			free(result);
 			fflush(stdout);
 
 			fdb_doc_free(rdoc);
