@@ -70,6 +70,11 @@ int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *ad
 	int ret = setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval));
 	if(ret == -1)
 		fatal_error("setsockopt SO_REUSEPORT failed");
+
+	ret = setsockopt(new_fd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+	if(ret == -1)
+		fatal_error("setsockopt SO_KEEPALIVE failed");
+
 	return new_fd;
 }
 
