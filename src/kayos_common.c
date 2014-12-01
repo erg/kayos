@@ -13,7 +13,18 @@
 #include "io.h"
 #include "utils.h"
 
+// Allow a-z first char, then a-z, 0-9, _$()+-/
+int kayos_dbname_valid_p(const char *dbname) {
+    if(!dbname)
+        return 0;
+    if(!(dbname[0] >= 'a' && dbname[0] <= 'z'))
+        return 0;
+    return strlen(dbname + 1) == strspn(dbname + 1, "abcdefghijklmnopqrstuvwxyz0123456789_$()+-/");
+}
+
 struct fdb_handles init_fdb(const char *path) {
+	if(!kayos_dbname_valid_p(path))
+		fatal_error("invalid dbname");
 	fdb_status status;
 	fdb_file_handle *dbfile;
 	fdb_kvs_handle *db;
@@ -166,3 +177,4 @@ int client_usage(int argc, char *argv[]) {
     fprintf(stderr, "usage: %s dbpath\n", argv[0]);
     return 0;
 }
+

@@ -24,9 +24,9 @@ int safe_mkdir(const char *path, mode_t mode) {
 	return 0;
 }
 
-void init_ipc() {
+void init_db_directory() {
 	int ret;
-	ret = safe_mkdir("./ipc", 0777);
+	ret = safe_mkdir("./kayosdbs", 0777);
 	if(ret == -1)
 		fatal_error("mkdir ./ipc failed");
 }
@@ -78,7 +78,7 @@ int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *ad
 	return new_fd;
 }
 
-void fork_socket_handler(int new_stdin, int new_stdout, const char *binary_path) {
+void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char *dbpath) {
 	pid_t clientpid;
 	if((clientpid = fork()) == -1)
 		fatal_error("fork failed");
@@ -86,7 +86,8 @@ void fork_socket_handler(int new_stdin, int new_stdout, const char *binary_path)
 	if(clientpid == 0) {
 		// Runs in child process
 		redirect_child_stdin_stdout(new_stdin, new_stdout);
-		execvp(binary_path, 0);
+		char *args[] = {binary_path, dbpath, 0};
+		execvp(binary_path, args);
 		fatal_error("execvp failed");
 		// XXX: control passes to child main()
 	} else {
@@ -98,6 +99,7 @@ void fork_socket_handler(int new_stdin, int new_stdout, const char *binary_path)
 int main(int argc, char *argv[]) {
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);
+	init_db_directory();
 	int producers_fd = init_socket(SERVER_PRODUCERS_PORT);
 	int consumers_fd = init_socket(SERVER_CONSUMERS_PORT);
 	int max_fd = consumers_fd;
@@ -121,12 +123,12 @@ int main(int argc, char *argv[]) {
 		if(FD_ISSET(producers_fd, &readfds)) {
 			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client test.fdb");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client", "kayosdbs/test");
 		}
 		if(FD_ISSET(consumers_fd, &readfds)) {
 			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client test.fdb");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client", "kayosdbs/test");
 		}
 	} while(1);
 

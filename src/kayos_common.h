@@ -27,5 +27,6 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_hand
 void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler);
 
 int client_usage(int argc, char *argv[]);
+int kayos_dbname_valid_p(const char *dbname);
 
 #endif
