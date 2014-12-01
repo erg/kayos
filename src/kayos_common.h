@@ -26,4 +26,6 @@ size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handle
 ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len);
 void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler);
 
+int client_usage(int argc, char *argv[]);
+
 #endif

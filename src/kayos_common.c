@@ -161,3 +161,8 @@ void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler h
 	}
 #endif
 }
+
+int client_usage(int argc, char *argv[]) {
+    fprintf(stderr, "usage: %s dbpath\n", argv[0]);
+    return 0;
+}

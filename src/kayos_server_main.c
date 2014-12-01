@@ -95,7 +95,7 @@ void fork_socket_handler(int new_stdin, int new_stdout, const char *binary_path)
 	}
 }
 
-int main(int argc, char *arg[]) {
+int main(int argc, char *argv[]) {
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);
 	int producers_fd = init_socket(SERVER_PRODUCERS_PORT);
@@ -121,12 +121,12 @@ int main(int argc, char *arg[]) {
 		if(FD_ISSET(producers_fd, &readfds)) {
 			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client test.fdb");
 		}
 		if(FD_ISSET(consumers_fd, &readfds)) {
 			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client test.fdb");
 		}
 	} while(1);
 

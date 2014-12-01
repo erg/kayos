@@ -90,4 +90,3 @@ void fatal_error(const char* msg) {
     fprintf(stderr, "errno = %d, strerrno: %s\n", errno, strerror(errno));
 	abort();
 }
-

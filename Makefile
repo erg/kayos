@@ -24,24 +24,27 @@ endif
 
 LIBNAME = $(DLL_PREFIX)$(LIBBASE)$(DLL_SUFFIX)$(DLL_EXTENSION)
 
-DLL_OBJS = $(PLAF_DLL_OBJS) \
-	src/buffer.o \
-	src/io.o \
-	src/utils.o
-
 MASTER_HEADERS = src/buffer.h \
 	src/io.h \
 	src/utils.h
 
 SERVER_HEADERS = $(MASTER_HEADERS)
+
 PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS) \
 	src/http.h \
 	src/producer_client.h \
 	src/kayos_common.h
+
 CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS) \
 	src/http.h \
 	src/consumer_client.h \
 	src/kayos_common.h
+
+# core binaries
+DLL_OBJS = $(PLAF_DLL_OBJS) \
+	src/buffer.o \
+	src/io.o \
+	src/utils.o
 
 SERVER_OBJS = $(DLL_OBJS) \
 	src/kayos_server_main.o
@@ -60,6 +63,7 @@ CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
 	src/producer_client.o \
 	src/kayos_consumer_client_main.o
 
+# test binaries
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
 	tests/test_buffer.o
 
