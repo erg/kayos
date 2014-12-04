@@ -4,6 +4,3 @@
 [submodule "forestdb"]
 	path = forestdb
 	url = https://github.com/couchbaselabs/forestdb.git
-[submodule "libuv"]
-	path = libuv
-	url = https://github.com/libuv/libuv.git
