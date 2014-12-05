@@ -48,6 +48,16 @@ void close_fdb_handles(struct fdb_handles handles) {
 	fdb_close(handles.dbfile);
 }
 
+ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len) {
+	fatal_error("parse_json unimplemented");
+	return 0;
+}
+
+size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len) {
+	fatal_error("unimplemented parse_binary");
+	return 0;
+}
+
 ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len) {
     char *ptr = line;
     char *command = 0, *key = 0, *val = 0, *rest = 0;
@@ -94,11 +104,6 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler
 	return end - eol;
 }
 
-size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len) {
-	fatal_error("unimplemented parse_binary");
-	return 0;
-}
-
 ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len) {
     ssize_t remaining = len;
     char *ptr = buffer;
@@ -112,7 +117,9 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_hand
 		previous_remaining = remaining;
 		if(ptr >= end) break;
 
-		if(*ptr <= 127)
+		if(*ptr == '{')
+			remaining = parse_json(dbfile, db, handler, ptr, end - ptr);
+		else if(*ptr <= 127)
 			remaining = parse_line(dbfile, db, handler, ptr, end - ptr);
 		else
 			remaining = parse_binary(dbfile, db, handler, ptr, end - ptr);

@@ -11,25 +11,11 @@
 #include <unistd.h>
 
 #include "io.h"
+#include "kayos_paths.h"
 #include "utils.h"
 
 const char SERVER_PRODUCERS_PORT[] = "9890";
 const char SERVER_CONSUMERS_PORT[] = "9891";
-
-int safe_mkdir(const char *path, mode_t mode) {
-	int ret;
-	ret = mkdir(path, mode);
-	if(ret == -1 && errno != EEXIST)
-		return -1;
-	return 0;
-}
-
-void init_db_directory() {
-	int ret;
-	ret = safe_mkdir("./kayosdbs", 0777);
-	if(ret == -1)
-		fatal_error("mkdir ./ipc failed");
-}
 
 int init_socket(const char *servname) {
 	int ret;
@@ -97,9 +83,10 @@ void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char 
 }
 
 int main(int argc, char *argv[]) {
+	ensure_kayosdb_path();
+
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);
-	init_db_directory();
 	int producers_fd = init_socket(SERVER_PRODUCERS_PORT);
 	int consumers_fd = init_socket(SERVER_CONSUMERS_PORT);
 	int max_fd = consumers_fd;

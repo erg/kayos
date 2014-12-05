@@ -29,4 +29,6 @@ void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler h
 int client_usage(int argc, char *argv[]);
 int kayos_dbname_valid_p(const char *dbname);
 
+void ensure_kayosdb_path();
+
 #endif

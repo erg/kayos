@@ -13,6 +13,9 @@
 #include "io.h"
 #include "utils.h"
 
+//fdb_file_handle *current_dbfile;
+//fdb_kvs_handle *current_db;
+
 void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 	fdb_status status;
 	fdb_iterator *iterator;
@@ -39,11 +42,18 @@ void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 	fdb_iterator_close(iterator);
 }
 
+void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *key) {
+	// open queue or lookup, switch current queue
+}
+
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length) {
 	fprintf(stderr, "executing fdb consumer command: %s\n", command);
 	if(!strncmp(command, "iterate", 7)) {
 		do_iterate_command(dbfile, db);
+	} else if(!strncmp(command, "queue", 5)) {
+		do_queue_command(dbfile, db, key);
 	} else {
-		fprintf(stderr, "unknown command\n");
+		fprintf(stderr, "fail: unknown command\n");
+		fprintf(stdout, "fail: unknown command\n");
 	}
 }

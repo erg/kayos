@@ -47,11 +47,13 @@ DLL_OBJS = $(PLAF_DLL_OBJS) \
 	src/utils.o
 
 SERVER_OBJS = $(DLL_OBJS) \
+	src/kayos_paths.o \
 	src/kayos_server_main.o
 
 PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
 	src/http.o \
 	src/kayos_common.o \
+	src/kayos_paths.o \
 	src/consumer_client.o \
 	src/producer_client.o \
 	src/kayos_producer_client_main.o
@@ -59,6 +61,7 @@ PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
 CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
 	src/http.o \
 	src/kayos_common.o \
+	src/kayos_paths.o \
 	src/consumer_client.o \
 	src/producer_client.o \
 	src/kayos_consumer_client_main.o
