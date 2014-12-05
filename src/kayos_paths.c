@@ -55,23 +55,23 @@ void *malloc_vsnprintf(const char * restrict format, ...) {
 	return ptr;
 }
 
-void *get_kayosdb_path() {
-	char *dbpath = getenv("KAYOS_DB_PATH");
-	if(!dbpath)
-		return malloc_vsnprintf("%s", "/usr/local/var/lib/kayos/");
+void *get_kayos_data_path() {
+	char *data_path = getenv("KAYOS_DATA_PATH");
+	if(!data_path)
+		return malloc_vsnprintf("%s", "/usr/local/var/lib/kayos");
 	else
-		return malloc_vsnprintf("%s", dbpath);
+		return malloc_vsnprintf("%s", data_path);
 }
 
-void *get_kayosdb_path_for(char *dbname) {
+void *get_kayos_data_path_for(char *dbname) {
 	return 0;
 }
 
 
-void ensure_kayosdb_path() {
+void ensure_kayos_data_path() {
 	int ret;
-	char *path = get_kayosdb_path();
-	fprintf(stderr, "ensure_kayosdb_path(), path: %s\n", path);
+	char *path = get_kayos_data_path();
+	fprintf(stderr, "ensure_kayos_data_path(), path: %s\n", path);
 	ret = mkpath(path, 0777);
 	if(ret == -1)
 		fatal_error("mkdir failed");

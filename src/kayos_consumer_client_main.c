@@ -1,15 +1,8 @@
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include <forestdb.h>
-#include <jansson.h>
 
 #include "kayos_common.h"
+#include "kayos_paths.h"
 #include "consumer_client.h"
-#include "buffer.h"
-#include "io.h"
 #include "utils.h"
 
 int main(int argc, char *argv[]) {
@@ -17,7 +10,7 @@ int main(int argc, char *argv[]) {
         return client_usage(argc, argv);
     }
 
-	ensure_kayosdb_path();
+	ensure_kayos_data_path();
 
 	char *dbname = argv[1];
 	struct fdb_handles handles = init_fdb(dbname);

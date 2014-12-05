@@ -83,7 +83,7 @@ void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char 
 }
 
 int main(int argc, char *argv[]) {
-	ensure_kayosdb_path();
+	ensure_kayos_data_path();
 
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);

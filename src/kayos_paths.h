@@ -8,9 +8,9 @@ int mkpath(char* path, mode_t mode);
 void *safe_malloc(size_t size);
 void *malloc_vsnprintf(const char * restrict format, ...);
 
-void *get_kayosdb_path();
-void *get_kayosdb_path_for(char *dbname);
+void *get_kayos_data_path();
+void *get_kayos_data_path_for(char *dbname);
 
-void ensure_kayosdb_path();
+void ensure_kayos_data_path();
 
 #endif
