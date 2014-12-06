@@ -47,6 +47,7 @@ char *buffer_token(char *buffer, size_t buffer_length, char **next) {
 	return ptr;
 }
 
+// Returns 0 on out of bounds
 char *buffer_take_while(char *buffer, size_t buffer_length, char *take, size_t take_length) {
 	if(!buffer)
 		return 0;
@@ -66,6 +67,7 @@ buffer_next:
 	return buffer + i;
 }
 
+// Returns 0 on out of bounds
 char *buffer_skip_until(char *buffer, size_t buffer_length, char *until, size_t until_length) {
 	if(!buffer)
 		return 0;

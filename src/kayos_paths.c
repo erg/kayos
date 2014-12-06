@@ -37,7 +37,7 @@ int mkpath(char* path, mode_t mode) {
 void *safe_malloc(size_t size) {
 	void *ptr = malloc(size);
 	if(!ptr)
-		fatal_error("malloc failed");
+		libc_fatal_error("malloc failed");
 	return ptr;
 }
 
@@ -74,6 +74,6 @@ void ensure_kayos_data_path() {
 	fprintf(stderr, "ensure_kayos_data_path(), path: %s\n", path);
 	ret = mkpath(path, 0777);
 	if(ret == -1)
-		fatal_error("mkdir failed");
+		libc_fatal_error("mkdir failed");
 	free(path);
 }

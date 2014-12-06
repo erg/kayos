@@ -30,36 +30,36 @@ int init_socket(const char *servname) {
 
 	sock_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if(sock_fd == -1)
-		fatal_error("socket failed");
+		libc_fatal_error("socket failed");
 
 	int optval = 1;
 	ret = setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 	if(ret == -1)
-		fatal_error("setsockopt SO_REUSEPORT failed");
+		libc_fatal_error("setsockopt SO_REUSEPORT failed");
 
 	ret = bind(sock_fd, res->ai_addr, res->ai_addrlen);
 	if(ret == -1)
-		fatal_error("bind failed");
+		libc_fatal_error("bind failed");
 
 	ret = listen(sock_fd, 16);
 	if(ret == -1)
-		fatal_error("listen failed");
+		libc_fatal_error("listen failed");
 	return sock_fd;
 }
 
 int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *addr_size) {
 	int new_fd = accept(sockfd, (struct sockaddr *)their_addr, addr_size);
 	if(new_fd == -1)
-		fatal_error("accept failed");
+		libc_fatal_error("accept failed");
 
 	int optval = 1;
 	int ret = setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, (void *)&optval, sizeof(optval));
 	if(ret == -1)
-		fatal_error("setsockopt SO_REUSEPORT failed");
+		libc_fatal_error("setsockopt SO_REUSEPORT failed");
 
 	ret = setsockopt(new_fd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
 	if(ret == -1)
-		fatal_error("setsockopt SO_KEEPALIVE failed");
+		libc_fatal_error("setsockopt SO_KEEPALIVE failed");
 
 	return new_fd;
 }
@@ -67,14 +67,14 @@ int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *ad
 void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char *dbpath) {
 	pid_t clientpid;
 	if((clientpid = fork()) == -1)
-		fatal_error("fork failed");
+		libc_fatal_error("fork failed");
 
 	if(clientpid == 0) {
 		// Runs in child process
 		redirect_child_stdin_stdout(new_stdin, new_stdout);
 		char *args[] = {binary_path, dbpath, 0};
 		execvp(binary_path, args);
-		fatal_error("execvp failed");
+		libc_fatal_error("execvp failed");
 		// XXX: control passes to child main()
 	} else {
 		// Runs in parent process
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 			if(errno == EINTR)
 				continue;
 			else
-				fatal_error("select");
+				libc_fatal_error("select");
 		}
 
 		if(FD_ISSET(producers_fd, &readfds)) {

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <jansson.h>
 
 void hexdump(FILE *stream, const char *buf, const uint64_t len);
 void named_hexdump(FILE *stream, const char *title, const char *buf, const uint64_t len);
@@ -16,6 +17,9 @@ void seconds_sleep(unsigned long long seconds);
 
 void close_stdout();
 
+void libc_fatal_error(const char* msg);
 void fatal_error(const char* msg);
+void json_print_error(json_error_t error);
+void json_fatal_error(const char* msg, json_error_t error);
 
 #endif

@@ -26,9 +26,15 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 			if(status != FDB_RESULT_SUCCESS) {
 				fatal_error("fdb_set_kv");
 			}
+#ifdef DEBUG
+			fprintf(stderr, "do_forestdb_producer_command: committing\n");
+#endif
 			status = fdb_commit(dbfile, FDB_COMMIT_NORMAL);
 			if(status != FDB_RESULT_SUCCESS)
 				fatal_error("fdb_commit");
+#ifdef DEBUG
+			fprintf(stderr, "do_forestdb_producer_command: committed\n");
+#endif
 		}
 	} else if(!strcmp(command, "delete")) {
 		if(key) {

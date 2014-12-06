@@ -36,7 +36,7 @@ ssize_t safe_write(int fd, const void* data, size_t size) {
 // fills in stdin,stdout pair
 void safe_pipe(int fd[2]) {
 	if(pipe(fd) == -1)
-		fatal_error("pipe failed");
+		libc_fatal_error("pipe failed");
 }
 
 // XXX: macosx says dup2 can return EINTR, linux maybe does?
@@ -59,7 +59,7 @@ int safe_dup2(int fildes, int fildes2) {
 void redirect_child_stdin_stdout(int new_stdin, int new_stdout) {
 	printf("redirect_child_stdin_stdout %d, %d\n", new_stdin, new_stdout);
 	if(new_stdin != -1 && safe_dup2(new_stdin, STDIN_FILENO) != STDIN_FILENO)
-		fatal_error("child: failed stdin setup");
+		libc_fatal_error("child: failed stdin setup");
 	if(new_stdout != -1 && safe_dup2(new_stdout, STDOUT_FILENO) != STDOUT_FILENO)
-		fatal_error("child: failed stdout setup");
+		libc_fatal_error("child: failed stdout setup");
 }

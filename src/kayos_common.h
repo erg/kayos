@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include <forestdb.h>
+#include <jansson.h>
 
 #define BUFFER_LENGTH 1024
 
@@ -19,6 +20,8 @@ struct fdb_handles {
 
 struct fdb_handles init_fdb(const char *path);
 void close_fdb_handles(struct fdb_handles handles);
+
+void handle_json_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, json_t *obj);
 
 ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len);
 size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len);
