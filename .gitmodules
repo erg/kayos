@@ -4,6 +4,3 @@
 [submodule "forestdb"]
 	path = forestdb
 	url = https://github.com/couchbaselabs/forestdb.git
-[submodule "tommyds"]
-	path = tommyds
-	url = https://github.com/amadvance/tommyds.git
