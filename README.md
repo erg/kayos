@@ -35,6 +35,9 @@ Producer port:
 Producer commands:
 * set key val
 * delete key
+* {"command": "set", "key": "a", "value": "1"}
+* [{"command": "set", "key": "a", "value": "1"},{"command": "set", "key": "b", "value": "2"}]
+
 
 Consumer port:
 * ``telnet 9891``
@@ -42,6 +45,7 @@ Consumer port:
 Consumer commands:
 * get key
 * iterate
+* {"command": "iterate"}
 
 HTTP commands:
 * ``curl -X GET http://127.0.0.1:9891/_iterate``
