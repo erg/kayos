@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "io.h"
 #include "utils.h"
 
 int safe_mkdir(const char *path, mode_t mode) {
@@ -34,27 +35,6 @@ int mkpath(char* path, mode_t mode) {
 	return safe_mkdir(path, mode);
 }
 
-void *safe_malloc(size_t size) {
-	void *ptr = malloc(size);
-	if(!ptr)
-		libc_fatal_error("malloc failed");
-	return ptr;
-}
-
-// vsnprintf returns number of characters that would have been printed, need to +1 for null
-// ptr is null terminated
-void *malloc_vsnprintf(const char * restrict format, ...) {
-	va_list args;
-	va_start(args, format);
-	int len = vsnprintf(NULL, 0, format, args);
-	va_end(args);
-	va_start(args, format);
-	void *ptr = safe_malloc(len + 1);
-	vsnprintf(ptr, len + 1, format, args);
-	va_end(args);
-	return ptr;
-}
-
 void *get_kayos_data_path() {
 	char *data_path = getenv("KAYOS_DATA_PATH");
 	if(!data_path)
@@ -63,8 +43,11 @@ void *get_kayos_data_path() {
 		return malloc_vsnprintf("%s", data_path);
 }
 
-void *get_kayos_data_path_for(char *dbname) {
-	return 0;
+void *get_kayos_data_path_for(const char *dbname) {
+	char *data_path = get_kayos_data_path();
+	char *dbpath = malloc_vsnprintf("%s/%s", data_path, dbname);
+	free(data_path);
+	return dbpath;
 }
 
 

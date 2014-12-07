@@ -10,6 +10,7 @@
 
 #include "buffer.h"
 #include "http.h"
+#include "kayos_paths.h"
 #include "io.h"
 #include "utils.h"
 
@@ -22,15 +23,17 @@ int kayos_dbname_valid_p(const char *dbname) {
 	return strlen(dbname + 1) == strspn(dbname + 1, "abcdefghijklmnopqrstuvwxyz0123456789_$()+-/");
 }
 
-struct fdb_handles init_fdb(const char *path) {
-	if(!kayos_dbname_valid_p(path))
+struct fdb_handles init_fdb(const char *dbname) {
+	if(!kayos_dbname_valid_p(dbname))
 		fatal_error("invalid dbname");
 	fdb_status status;
 	fdb_file_handle *dbfile;
 	fdb_kvs_handle *db;
 	fdb_config fconfig = fdb_get_default_config();
 	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
+	char *path = get_kayos_data_path_for(dbname);
 	status = fdb_open(&dbfile, path, &fconfig);
+	free(path);
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_open failed");
 	status = fdb_kvs_open_default(dbfile, &db, &kvs_config);

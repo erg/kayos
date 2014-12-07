@@ -5,11 +5,9 @@
 
 int safe_mkdir(const char *path, mode_t mode);
 int mkpath(char* path, mode_t mode);
-void *safe_malloc(size_t size);
-void *malloc_vsnprintf(const char * restrict format, ...);
 
 void *get_kayos_data_path();
-void *get_kayos_data_path_for(char *dbname);
+void *get_kayos_data_path_for(const char *dbname);
 
 void ensure_kayos_data_path();
 

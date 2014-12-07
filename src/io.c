@@ -81,3 +81,25 @@ void close_stdout() {
     fflush(stdout);
     close(1);
 }
+
+
+void *safe_malloc(size_t size) {
+	void *ptr = malloc(size);
+	if(!ptr)
+		libc_fatal_error("malloc failed");
+	return ptr;
+}
+
+// vsnprintf returns number of characters that would have been printed, need to +1 for null
+// ptr is null terminated
+void *malloc_vsnprintf(const char * restrict format, ...) {
+	va_list args;
+	va_start(args, format);
+	int len = vsnprintf(NULL, 0, format, args);
+	va_end(args);
+	va_start(args, format);
+	void *ptr = safe_malloc(len + 1);
+	vsnprintf(ptr, len + 1, format, args);
+	va_end(args);
+	return ptr;
+}

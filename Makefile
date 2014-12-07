@@ -8,8 +8,10 @@ SERVER_LIBS =
 PRODUCER_CLIENT_LIBS = -lforestdb -ljansson
 CONSUMER_CLIENT_LIBS = -lforestdb -ljansson
 TEST_BUFFER_LIBS =
+TESTER_LIBS = -ljansson
 INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb
 TEST_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tests
+TESTER_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tester
 
 MKDIR_P = mkdir -p
 BINDIR = bin
@@ -70,9 +72,13 @@ CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
 	tests/test_buffer.o
 
-.PHONY: kayos-server kayos-producer-client kayos-consumer-client test-buffer clean directories
+TESTER_OBJS = $(DLL_OBJS) \
+	tester/tester.o \
+	tester/tester_main.o
 
-ALL = directories kayos-server kayos-producer-client kayos-consumer-client test-buffer
+.PHONY: kayos-server kayos-producer-client kayos-consumer-client test-buffer tester clean directories
+
+ALL = directories kayos-server kayos-producer-client kayos-consumer-client test-buffer tester
 
 default:
 	$(MAKE) $(ALL)
@@ -88,6 +94,9 @@ kayos-consumer-client: $(CONSUMER_CLIENT_OBJS)
 
 test-buffer: $(TEST_BUFFER_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/test-buffer $(CFLAGS) $(TEST_INCLUDE_PATHS) $(TEST_BUFFER_LIBS) $(TEST_BUFFER_OBJS)
+
+tester: $(TESTER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/tester $(CFLAGS) $(TESTER_INCLUDE_PATHS) $(TESTER_LIBS) $(TESTER_OBJS)
 
 %.o: %.c
 	$(TOOLCHAIN_PREFIX)$(CC) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<

@@ -16,5 +16,8 @@ int safe_dup2(int fildes, int fildes2);
 void redirect_child_stdin_stdout(int new_stdin, int new_stdout);
 void close_stdout();
 
+void *safe_malloc(size_t size);
+void *malloc_vsnprintf(const char * restrict format, ...);
+
 
 #endif
