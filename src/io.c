@@ -1,6 +1,7 @@
 #include "io.h"
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 #include "utils.h"
 
@@ -31,6 +32,17 @@ ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written) {
 
 ssize_t safe_write(int fd, const void* data, size_t size) {
 	return safe_write_impl(fd, data, size, 0);
+}
+
+int safe_open(const char *path, int oflags, ...) {
+	va_list args;
+	int fd;
+	do {
+		va_start(args, oflags);
+		fd = open(path, oflags, args);
+		va_end(args);
+	} while(fd == -1 && errno == EINTR);
+	return fd;
 }
 
 // fills in stdin,stdout pair

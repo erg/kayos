@@ -7,6 +7,7 @@
 ssize_t safe_read(int fd, char* data, ssize_t size);
 ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written);
 ssize_t safe_write(int fd, const void* data, size_t size);
+int safe_open(const char *path, int oflag, ...);
 
 void safe_pipe(int fd[2]);
 int safe_dup2(int fildes, int fildes2);
