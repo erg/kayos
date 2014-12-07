@@ -63,3 +63,9 @@ void redirect_child_stdin_stdout(int new_stdin, int new_stdout) {
 	if(new_stdout != -1 && safe_dup2(new_stdout, STDOUT_FILENO) != STDOUT_FILENO)
 		libc_fatal_error("child: failed stdout setup");
 }
+
+// Needed to close sockets if connected.
+void close_stdout() {
+    fflush(stdout);
+    close(1);
+}

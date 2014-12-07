@@ -15,8 +15,6 @@ void micro_sleep(unsigned long long micros);
 void millis_sleep(unsigned long long millis);
 void seconds_sleep(unsigned long long seconds);
 
-void close_stdout();
-
 void libc_fatal_error(const char* msg);
 void fatal_error(const char* msg);
 void json_print_error(json_error_t error);

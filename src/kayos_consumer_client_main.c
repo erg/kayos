@@ -3,7 +3,7 @@
 #include "kayos_common.h"
 #include "kayos_paths.h"
 #include "consumer_client.h"
-#include "utils.h"
+#include "io.h"
 
 int main(int argc, char *argv[]) {
     if(argc != 2) {
