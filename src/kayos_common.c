@@ -23,32 +23,31 @@ int kayos_dbname_valid_p(const char *dbname) {
 	return strlen(dbname + 1) == strspn(dbname + 1, "abcdefghijklmnopqrstuvwxyz0123456789_$()+-/");
 }
 
-struct fdb_handles init_fdb(const char *dbname) {
+fdb_file_handle *init_fdb_file_handle(const char *dbname) {
 	if(!kayos_dbname_valid_p(dbname))
 		fatal_error("invalid dbname");
 	fdb_status status;
 	fdb_file_handle *dbfile;
-	fdb_kvs_handle *db;
 	fdb_config fconfig = fdb_get_default_config();
-	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
 	char *path = get_kayos_data_path_for(dbname);
 	status = fdb_open(&dbfile, path, &fconfig);
 	free(path);
+
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_open failed");
+
+	return dbfile;
+}
+
+fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile) {
+	fdb_status status;
+	fdb_kvs_handle *db;
+	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
 	status = fdb_kvs_open_default(dbfile, &db, &kvs_config);
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_kvs_open_default failed");
 
-	struct fdb_handles fdb_handles;
-	fdb_handles.dbfile = dbfile;
-	fdb_handles.db = db;
-	return fdb_handles;
-}
-
-void close_fdb_handles(struct fdb_handles handles) {
-	fdb_kvs_close(handles.db);
-	fdb_close(handles.dbfile);
+	return db;
 }
 
 void handle_json_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, json_t *obj) {
@@ -241,18 +240,31 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_hand
 	return remaining;
 }
 
-void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler) {
+void client_loop(const char *dbname, forestdb_handler handler) {
 	char buffer[BUFFER_LENGTH];
 	size_t remaining = 0;
+
+	fdb_file_handle *dbfile = NULL;
+	fdb_kvs_handle *db = NULL;
+
 	do {
+
 #ifdef DEBUG
 		named_hexdump(stderr, "producer_client loop head", buffer, remaining);
 #endif
 		ssize_t nbytes = safe_read(0, buffer + remaining, sizeof(buffer) - 1 - remaining);
+
+		dbfile = init_fdb_file_handle(dbname);
+		db = init_fdb_kvs_handle(dbfile);
+
 		if(nbytes == 0) {
 #ifdef DEBUG
 			fprintf(stderr, "producer_client: client disconnected\n");
 #endif
+			fdb_kvs_close(db);
+			db = NULL;
+			fdb_close(dbfile);
+			dbfile = NULL;
 			break;
 		} else if(nbytes == -1) {
 			libc_fatal_error("consumer_client: safe_read");
@@ -267,9 +279,20 @@ void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler h
 		// Used for closing HTTP commands.
 		// We returned -1, so we should disconnect the client.
 		if(remaining == -1) {
+			fdb_kvs_close(db);
+			db = NULL;
+			fdb_close(dbfile);
+			dbfile = NULL;
 			break;
 		}
+		fdb_kvs_close(db);
+		db = NULL;
+		fdb_close(dbfile);
+		dbfile = NULL;
 	} while(1);
+
+	fdb_kvs_close(db);
+	fdb_close(dbfile);
 
 #ifdef DEBUG
 	if(remaining > 0) {

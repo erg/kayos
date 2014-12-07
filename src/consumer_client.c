@@ -13,8 +13,45 @@
 #include "io.h"
 #include "utils.h"
 
-//fdb_file_handle *current_dbfile;
-//fdb_kvs_handle *current_db;
+// Allocates, call free on return value
+char *doc_to_string(fdb_doc *rdoc) {
+	json_t *dict = json_object();
+	json_object_set_new(dict, "key", json_stringn(rdoc->key, rdoc->keylen));
+	json_object_set_new(dict, "meta", json_stringn(rdoc->meta, rdoc->metalen));
+	json_object_set_new(dict, "body", json_stringn(rdoc->body, rdoc->bodylen));
+	json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
+	char *result = json_dumps(dict, 0);
+	return result;
+}
+
+void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, const char *key) {
+	fdb_status status;
+	fdb_doc *rdoc;
+
+	fdb_doc_create(&rdoc, (void*)key, strlen(key),
+			NULL, 0, NULL, 0);
+	status = fdb_get(db, rdoc);
+	if(status == FDB_RESULT_SUCCESS) {
+		fprintf(stdout, "%s\n", doc_to_string(rdoc));
+		fdb_doc_free(rdoc);
+	} else if(status == FDB_RESULT_KEY_NOT_FOUND) {
+		fprintf(stdout, "{\"result\": \"fail\", \"reason\": \"NO_KEY\"}\n");
+	}
+	/*
+	//status = fdb_get_kv(db, key, strlen(key), &rvalue, &rvalue_len);
+	if(status == FDB_RESULT_KEY_NOT_FOUND)
+		fprintf(stderr, "FDB_RESULT_KEY_NOT_FOUND, status: %d\n", status);
+	else if(status == FDB_RESULT_SUCCESS) {
+		//fprintf(stderr, "FDB_RESULT_SUCCESS, status: %d\n", status);
+		//fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
+
+	}
+	*/
+}
+
+void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *key) {
+	// open queue or lookup, switch current queue
+}
 
 void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 	fdb_status status;
@@ -34,36 +71,30 @@ void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 
 		//rdoc->keylen, rdoc->metalen rdoc->bodylen
 		//fprintf(stderr, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
-		json_t *dict = json_object();
-		json_object_set_new(dict, "key", json_string(rdoc->key));
-		json_object_set_new(dict, "meta", json_string(rdoc->meta));
-		json_object_set_new(dict, "body", json_string(rdoc->body));
-		json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
-		char *result = json_dumps(dict, 0);
+		char *result = doc_to_string(rdoc);
 		fprintf(stderr, "%s\n", result);
 		//fprintf(stdout, "%s\n", result);
-		if(result) free(result);
 		//fflush(stdout);
-
+		free(result);
 		fdb_doc_free(rdoc);
 	}
 	fdb_iterator_close(iterator);
 }
 
-void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *key) {
-	// open queue or lookup, switch current queue
-}
-
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length) {
 	fprintf(stderr, "executing fdb consumer command: %s\n", command);
-	if(!strncmp(command, "iterate", 7)) {
-		fprintf(stderr, "ITERATING\n");
-		do_iterate_command(dbfile, db);
-	} else if(!strncmp(command, "queue", 5)) {
+	if(!strncmp(command, "queue", 5)) {
 		fprintf(stderr, "QUEUE\n");
 		do_queue_command(dbfile, db, key);
+	} else if(!strncmp(command, "get", 3)) {
+		fprintf(stderr, "GETTING\n");
+		do_get_command(dbfile, db, key);
+	} else if(!strncmp(command, "iterate", 7)) {
+		fprintf(stderr, "ITERATING\n");
+		do_iterate_command(dbfile, db);
 	} else {
 		fprintf(stderr, "fail: unknown command\n");
 		fprintf(stdout, "fail: unknown command\n");
 	}
 }
+

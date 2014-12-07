@@ -13,13 +13,8 @@
 
 typedef void forestdb_handler(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length);
 
-struct fdb_handles {
-	fdb_file_handle *dbfile;
-	fdb_kvs_handle *db;
-};
-
-struct fdb_handles init_fdb(const char *path);
-void close_fdb_handles(struct fdb_handles handles);
+fdb_file_handle *init_fdb_file_handle(const char *path);
+fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile);
 
 void handle_json_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, json_t *obj);
 
@@ -27,7 +22,7 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler
 size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *line, size_t len);
 
 ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *buffer, size_t len);
-void client_loop(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler);
+void client_loop(const char *dbname, forestdb_handler handler);
 
 int client_usage(int argc, char *argv[]);
 int kayos_dbname_valid_p(const char *dbname);

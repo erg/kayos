@@ -13,9 +13,7 @@ int main(int argc, char *argv[]) {
 	ensure_kayos_data_path();
 
 	char *dbname = argv[1];
-	struct fdb_handles handles = init_fdb(dbname);
-	client_loop(handles.dbfile, handles.db, do_forestdb_producer_command);
+	client_loop(dbname, do_forestdb_producer_command);
 	close_stdout();
-	close_fdb_handles(handles);
 	return 0;
 }
