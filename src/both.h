@@ -7,9 +7,9 @@
 #include <jansson.h>
 
 #define BUFFER_LENGTH 1024
-typedef void forestdb_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length);
+typedef void forestdb_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, void *key, size_t key_length, void *value, size_t value_length);
 typedef size_t http_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, char *command, char *ptr, size_t len);
-typedef void json_handler_t(fdb_kvs_handle *db, json_t *json);
+typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json);
 
 int client_usage(int argc, char *argv[]);
 fdb_file_handle *init_fdb_file_handle(const char *path);

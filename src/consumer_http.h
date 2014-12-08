@@ -1,5 +1,5 @@
-#ifndef KAYOS_SRC_HTTP_H_
-#define KAYOS_SRC_HTTP_H_
+#ifndef KAYOS_SRC_CONSUMER_HTTP_H_
+#define KAYOS_SRC_CONSUMER_HTTP_H_
 
 #include <forestdb.h>
 

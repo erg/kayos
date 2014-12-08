@@ -64,7 +64,7 @@ char *doc_to_string(fdb_doc *rdoc) {
 }
 
 void parse_key_value(const char *line, char **key, char **value) {
-	
+	unimplemented("parse_key_value()");
 }
 
 void do_topic_command(fdb_kvs_handle *db,
@@ -206,11 +206,11 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t j
 		size_t index;
 		json_t *value;
 		json_array_foreach(json, index, value) {
-			json_handler(db, json);
+			json_handler(dbfile, db, json);
 		}
 	// {}
 	} else
-		json_handler(db, json);
+		json_handler(dbfile, db, json);
 
 	json_decref(json);
 	return len - error.position;
