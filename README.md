@@ -48,6 +48,7 @@ Consumer commands:
 * iterate 100 -- seqnum >= 100
 * {"command": "iterate"}
 * {"command": "iterate", "start": "100"}
+* {"command": "get", "key": "a"}
 
 HTTP commands:
 * ``curl -X GET http://127.0.0.1:9891/_iterate``
