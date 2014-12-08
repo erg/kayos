@@ -5,12 +5,7 @@
 #include <string.h>
 
 // Binary protocol: opcode, 8byte length
-// Ascii protocol: set, get,
-// HTTP protocol
 // Long poll
-
-//char *safe_strtok_r(char *str, const char *sep, char **lasts) {
-//}
 
 char *buffer_skip_tabspace(char *buffer, size_t buffer_length) {
 	return buffer_take_while(buffer, buffer_length, " \t", 2);
