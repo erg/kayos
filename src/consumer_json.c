@@ -11,13 +11,11 @@
 
 void call_json_get(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
 	const char *required_keys[] = {"command", "key", 0};
-	ensure_json_keys(json, json_errors, required_keys, NULL);
+	ensure_json_keys(json_errors, json, required_keys, NULL);
 	json_t *value = get_json_string(json_errors, json, "key");
 
 	if(!json_errors_p(json_errors))
 		do_get_command(db, json_string_value(value));
-
-	json_decref(value);
 }
 
 void call_json_iterate(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {

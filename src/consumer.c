@@ -19,12 +19,11 @@ void do_get_command(fdb_kvs_handle *db, const char *key) {
 	fdb_doc_create(&rdoc, (void*)key, strlen(key),
 			NULL, 0, NULL, 0);
 	status = fdb_get(db, rdoc);
-	if(status == FDB_RESULT_SUCCESS) {
+	if(status == FDB_RESULT_SUCCESS)
 		fprintf(stdout, "%s\n", doc_to_string(rdoc));
-		fdb_doc_free(rdoc);
-	} else if(status == FDB_RESULT_KEY_NOT_FOUND) {
-		fprintf(stdout, "{\"result\": \"fail\", \"reason\": \"NO_KEY\"}\n");
-	}
+	else if(status == FDB_RESULT_KEY_NOT_FOUND)
+		fprintf(stdout, "{\"status\": \"fail\", \"reason\": \"NO_KEY\"}\n");
+	fdb_doc_free(rdoc);
 }
 
 void do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start) {
