@@ -12,6 +12,7 @@ Cloning:
 To update dependencies:
 * ``git submodule update --remote forestdb``
 * ``git submodule update --remote jansson``
+* ``git submodule foreach git pull``
 
 Build forestdb:
 * ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
