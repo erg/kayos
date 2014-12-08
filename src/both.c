@@ -11,6 +11,7 @@
 
 #include "buffer.h"
 #include "errors.h"
+#include "errors_json.h"
 #include "hexdump.h"
 #include "io.h"
 #include "paths.h"
@@ -20,15 +21,6 @@ static char buffer[BUFFER_LENGTH];
 int client_usage(int argc, char *argv[]) {
     fprintf(stderr, "usage: %s dbpath\n", argv[0]);
     return 0;
-}
-
-// Allow a-z first char, then a-z, 0-9, _$()+-/
-int kayos_dbname_valid_p(const char *dbname) {
-    if(!dbname)
-        return 0;
-    if(!(dbname[0] >= 'a' && dbname[0] <= 'z'))
-        return 0;
-    return strlen(dbname + 1) == strspn(dbname + 1, "abcdefghijklmnopqrstuvwxyz0123456789_$()+-/");
 }
 
 fdb_file_handle *init_fdb_file_handle(const char *dbname) {
@@ -66,6 +58,8 @@ char *doc_to_string(fdb_doc *rdoc) {
 	json_object_set_new(dict, "body", json_stringn(rdoc->body, rdoc->bodylen));
 	json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
 	char *result = json_dumps(dict, 0);
+	if(!result) fatal_error("json_dumps() failed");
+	json_decref(dict);
 	return result;
 }
 
@@ -73,13 +67,15 @@ void parse_key_value(const char *line, char **key, char **value) {
 	
 }
 
-void do_topic_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+void do_topic_command(fdb_kvs_handle *db,
 	const char *dbname) {
 	// open topic or lookup, switch current topic
+
+	unimplemented("do_topic_command()");
 }
 
 
-void client_loop(const char *dbname, forestdb_handler_t handler, http_handler_t handle_http) {
+void client_loop(const char *dbname, forestdb_handler_t handler, http_handler_t handle_http, json_handler_t json_handler) {
 	size_t remaining = 0;
 
 	fdb_file_handle *dbfile = NULL;
@@ -111,7 +107,7 @@ void client_loop(const char *dbname, forestdb_handler_t handler, http_handler_t 
 #ifdef DEBUG
 			named_hexdump(stderr, "consumer_client got", buffer, nbytes);
 #endif
-			remaining = handle_buffer(dbfile, db, handler, handle_http, buffer, nbytes);
+			remaining = handle_buffer(dbfile, db, handler, handle_http, json_handler, buffer, nbytes);
 		}
 
 		// Used for closing HTTP commands.
@@ -139,7 +135,12 @@ void client_loop(const char *dbname, forestdb_handler_t handler, http_handler_t 
 #endif
 }
 
-ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, http_handler_t handle_http, char *buffer, size_t len) {
+ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+		forestdb_handler_t handler,
+		http_handler_t handle_http,
+		json_handler_t json_handler,
+		char *buffer, size_t len) {
+
 	ssize_t remaining = len;
 	char *ptr = buffer;
 	char *end = buffer + len;
@@ -157,7 +158,7 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_hand
 		}
 
 		if(*ptr == '{' || *ptr == '[')
-			remaining = parse_json(dbfile, db, handler, ptr, end - ptr);
+			remaining = parse_json(dbfile, db, json_handler, ptr, end - ptr);
 		else if(*ptr <= 127)
 			remaining = parse_line(dbfile, db, handler, handle_http, ptr, end - ptr);
 		else
@@ -182,51 +183,15 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_hand
 	return remaining;
 }
 
-void handle_json_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, json_t *obj) {
-
-	// This is just debug stuff
-	void *iter = json_object_iter(obj);
-	if(!iter) fatal_error("json_object_iter");
-
-	int count = 0;
-	do {
-		const char *key = json_object_iter_key(iter);
-		const json_t *value = json_object_iter_value(iter);
-		fprintf(stderr, "got obj %d:\n", count);
-		fprintf(stderr, " key: %s\n", key);
-		fprintf(stderr, " value: %s\n", json_string_value(value));
-		iter = json_object_iter_next(obj, iter);
-		count++;
-	} while(iter);
-
-	// Real command handling
-	json_t *command_object = json_object_get(obj, "command");
-	json_t *key_object = json_object_get(obj, "key");
-	json_t *value_object = json_object_get(obj, "value");
-	char *command = (char *)json_string_value(command_object);
-	char *key = (char *)json_string_value(key_object);
-	char *value = (char *)json_string_value(value_object);
-
-	fprintf(stderr, "command: %s\n", command);
-	fprintf(stderr, "key: %s\n", key);
-	fprintf(stderr, "value: %s\n", value);
-
-	handler(dbfile, db, command,
-						key,
-						key ? strlen(key) : 0,
-						value,
-						value ? strlen(value) : 0);
-}
-
-ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, char *buffer, size_t len) {
+ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t json_handler, char *buffer, size_t len) {
 	named_hexdump(stderr, "parse_json", buffer, len);
 	//buffer[len-1] = 0;
 
 	json_error_t error;
-	json_t *obj;
+	json_t *json;
 
-	obj = json_loads(buffer, JSON_REJECT_DUPLICATES, &error);
-	if(!obj) {
+	json = json_loads(buffer, JSON_REJECT_DUPLICATES, &error);
+	if(!json) {
 		//json_fatal_error("json_loads messed up", error);
 		fprintf(stderr, "json loads messed up!\n");
 		json_print_error(error);
@@ -237,38 +202,16 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler
 	json_print_error(error);
 
 	// [{},{},{}]
-	if(json_is_array(obj)) {
+	if(json_is_array(json)) {
 		size_t index;
 		json_t *value;
-		json_array_foreach(obj, index, value) {
-			handle_json_command(dbfile, db, handler, value);
+		json_array_foreach(json, index, value) {
+			json_handler(db, json);
 		}
 	} else {
 	// {}
-		handle_json_command(dbfile, db, handler, obj);
+		json_handler(db, json);
 	}
-/*
-// TODO: figure out cleanup here
-#ifdef DEBUG
-	fprintf(stderr, "decref command_object\n");
-#endif
-	if(command_object) json_decref(command_object);
-#ifdef DEBUG
-	fprintf(stderr, "decref key_object\n");
-#endif
-	if(key_object) json_decref(key_object);
-#ifdef DEBUG
-	fprintf(stderr, "decref value_object\n");
-#endif
-	if(value_object) json_decref(value_object);
-#ifdef DEBUG
-	fprintf(stderr, "decref obj\n");
-#endif
-	if(obj) json_decref(obj);
-#ifdef DEBUG
-	fprintf(stderr, "returning error.position: %d\n", error.position);
-#endif
-*/
 
 	return len - error.position;
 }

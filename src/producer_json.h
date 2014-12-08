@@ -1,8 +1,9 @@
 #ifndef KAYOS_SRC_PRODUCER_JSON_H_
 #define KAYOS_SRC_PRODUCER_JSON_H_
 
+#include <forestdb.h>
 #include <jansson.h>
 
-void parse_producer_json(json_t *json);
+void call_producer_json(fdb_kvs_handle *db, json_t *json);
 
 #endif

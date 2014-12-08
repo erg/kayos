@@ -25,7 +25,7 @@ size_t handle_consumer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestd
 
     if(!strncmp(command, "GET", 3)) {
 		if(!strncmp(url, "/_iterate", 9)) {
-			do_iterate_command(dbfile, db, 0);
+			do_iterate_command(db, 0);
 		}
 	}
     else if(!strncmp(command, "PUT", 3)) {
