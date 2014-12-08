@@ -56,7 +56,7 @@ SERVER_OBJS = $(DLL_OBJS) \
 
 PRODUCER_OBJS = $(DLL_OBJS) \
 	src/both.o \
-	src/errors_json.o \
+	src/json_utils.o \
 	src/paths.o \
 	src/producer.o \
 	src/producer_http.o \
@@ -65,7 +65,7 @@ PRODUCER_OBJS = $(DLL_OBJS) \
 
 CONSUMER_OBJS = $(DLL_OBJS) \
 	src/both.o \
-	src/errors_json.o \
+	src/json_utils.o \
 	src/paths.o \
 	src/consumer.o \
 	src/consumer_http.o \
@@ -78,7 +78,7 @@ TEST_BUFFER_OBJS = $(DLL_OBJS) \
 
 TESTER_OBJS = $(DLL_OBJS) \
 	tester/tester.o \
-	src/errors_json.o \
+	src/json_utils.o \
 	tester/tester_main.o
 
 .PHONY: kayos-server kayos-producer kayos-consumer test-buffer tester clean directories

@@ -7,7 +7,7 @@
 
 #include "both.h"
 #include "consumer.h"
-#include "errors_json.h"
+#include "json_utils.h"
 
 void call_json_get(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
 	const char *required_keys[] = {"command", "key", 0};

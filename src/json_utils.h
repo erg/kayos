@@ -1,5 +1,5 @@
-#ifndef KAYOS_SRC_ERRORS_JSON_H_
-#define KAYOS_SRC_ERRORS_JSON_H_
+#ifndef KAYOS_SRC_JSON_UTILS_H_
+#define KAYOS_SRC_JSON_UTILS_H_
 
 #include <forestdb.h>
 #include <jansson.h>

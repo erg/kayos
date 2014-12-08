@@ -11,9 +11,9 @@
 
 #include "buffer.h"
 #include "errors.h"
-#include "errors_json.h"
 #include "hexdump.h"
 #include "io.h"
+#include "json_utils.h"
 #include "paths.h"
 
 static char buffer[BUFFER_LENGTH];
