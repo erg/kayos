@@ -15,20 +15,6 @@
 #include "io.h"
 #include "paths.h"
 
-//#include <ctype.h>
-//#include <errno.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <stdlib.h>
-
-//#include <forestdb.h>
-
-//#include "buffer.h"
-//#include "http.h"
-//#include "paths.h"
-//#include "io.h"
-//#include "utils.h"
-
 static char buffer[BUFFER_LENGTH];
 
 int client_usage(int argc, char *argv[]) {

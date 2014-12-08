@@ -5,13 +5,9 @@
 
 #include "errors.h"
 
-//#include <ctype.h>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <unistd.h>
+static void nano_sleep_impl(struct timespec *rqtp);
 
-void nano_sleep_impl(struct timespec *rqtp) {
+static void nano_sleep_impl(struct timespec *rqtp) {
 	struct timespec rmtp;
 	int ret = nanosleep(rqtp, &rmtp);
 	if(ret == -1) {

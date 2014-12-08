@@ -9,6 +9,8 @@
 
 #include "errors.h"
 
+static ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written);
+
 ssize_t safe_read(int fd, char* data, ssize_t size) {
 	ssize_t nbytes = read(fd, data, size-1);
 	if (nbytes < 0) {
@@ -21,7 +23,7 @@ ssize_t safe_read(int fd, char* data, ssize_t size) {
 	return nbytes;
 }
 
-ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written) {
+static ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written) {
 	ssize_t nbytes = write(fd, (char*)data + written, size - written);
 	if(nbytes == -1 && errno != EINTR) {
 		return written;

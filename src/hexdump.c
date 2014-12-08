@@ -5,11 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include <ctype.h>
-//#include <errno.h>
-//#include <time.h>
-//#include <unistd.h>
-
 void hexdump(FILE *stream, const char *buf, const uint64_t len) {
 	if (!buf)
 		return;

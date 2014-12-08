@@ -1,7 +1,6 @@
 #ifndef KAYOS_SRC_HTTP_H_
 #define KAYOS_SRC_HTTP_H_
 
-#include <stdlib.h>
 #include <forestdb.h>
 
 #include "both.h"

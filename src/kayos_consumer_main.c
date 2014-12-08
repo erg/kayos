@@ -1,10 +1,10 @@
 #include <forestdb.h>
 
 #include "both.h"
-#include "consumer.h"
-#include "consumer_http.h"
 #include "io.h"
 #include "paths.h"
+#include "consumer.h"
+#include "consumer_http.h"
 
 int main(int argc, char *argv[]) {
     if(argc != 2) {

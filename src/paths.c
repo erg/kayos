@@ -1,15 +1,19 @@
 #include "paths.h"
 
 #include <stdio.h>
-//#include <errno.h>
-//#include <stdarg.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <sys/stat.h>
-//#include <unistd.h>
 
 #include "errors.h"
 #include "io.h"
+
+void ensure_kayos_data_path() {
+	int ret;
+	char *path = get_kayos_data_path();
+	fprintf(stderr, "ensure_kayos_data_path(), path: %s\n", path);
+	ret = mkpath(path, 0777);
+	if(ret == -1)
+		libc_fatal_error("mkdir failed");
+	free(path);
+}
 
 void *get_kayos_data_path() {
 	char *data_path = getenv("KAYOS_DATA_PATH");
@@ -24,14 +28,4 @@ void *get_kayos_data_path_for(const char *dbname) {
 	char *dbpath = malloc_vsnprintf("%s/%s", data_path, dbname);
 	free(data_path);
 	return dbpath;
-}
-
-void ensure_kayos_data_path() {
-	int ret;
-	char *path = get_kayos_data_path();
-	fprintf(stderr, "ensure_kayos_data_path(), path: %s\n", path);
-	ret = mkpath(path, 0777);
-	if(ret == -1)
-		libc_fatal_error("mkdir failed");
-	free(path);
 }
