@@ -24,7 +24,9 @@ char *doc_to_string(fdb_doc *rdoc) {
 	return result;
 }
 
-void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, const char *key) {
+void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	const char *key) {
+
 	fdb_status status;
 	fdb_doc *rdoc;
 
@@ -37,27 +39,26 @@ void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, const char *key
 	} else if(status == FDB_RESULT_KEY_NOT_FOUND) {
 		fprintf(stdout, "{\"result\": \"fail\", \"reason\": \"NO_KEY\"}\n");
 	}
-	/*
-	//status = fdb_get_kv(db, key, strlen(key), &rvalue, &rvalue_len);
-	if(status == FDB_RESULT_KEY_NOT_FOUND)
-		fprintf(stderr, "FDB_RESULT_KEY_NOT_FOUND, status: %d\n", status);
-	else if(status == FDB_RESULT_SUCCESS) {
-		//fprintf(stderr, "FDB_RESULT_SUCCESS, status: %d\n", status);
-		//fprintf(stderr, "got key: %s, val: %s\n", key, rvalue);
-
-	}
-	*/
 }
 
-void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *key) {
+void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	const char *key) {
 	// open queue or lookup, switch current queue
 }
 
-void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
+void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	const char *key) {
+
+	int start = 0;
+
+	if(key) {
+		start = atoi(key);
+	}
+
 	fdb_status status;
 	fdb_iterator *iterator;
 	fdb_doc *rdoc;
-	status = fdb_iterator_sequence_init(db, &iterator, 0, -1, FDB_ITR_NONE);
+	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
 	fprintf(stderr, "fdb_iterator_sequence_init status: %d\n", status);
 	if(status != FDB_RESULT_SUCCESS) {
 		fprintf(stderr, "fdb_iterator_sequence_init failed");
@@ -69,19 +70,21 @@ void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db) {
 		//fprintf(stderr, "fdb_iterator_next status: %d\n", status);
 		if (status == FDB_RESULT_ITERATOR_FAIL) break;
 
-		//rdoc->keylen, rdoc->metalen rdoc->bodylen
-		//fprintf(stderr, "seqnum: %llu, meta: %s, key: %s, body: %s\r\n", rdoc->seqnum, rdoc->meta, rdoc->key, rdoc->body);
 		char *result = doc_to_string(rdoc);
-		fprintf(stderr, "%s\n", result);
-		//fprintf(stdout, "%s\n", result);
-		//fflush(stdout);
+		//fprintf(stderr, "%s\n", result);
+		fprintf(stdout, "%s\n", result);
+		fflush(stdout);
 		free(result);
 		fdb_doc_free(rdoc);
 	}
 	fdb_iterator_close(iterator);
 }
 
-void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length) {
+void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	const char *command,
+	const char *key, size_t key_length,
+	const char *val, size_t val_length) {
+
 	fprintf(stderr, "executing fdb consumer command: %s\n", command);
 	if(!strncmp(command, "queue", 5)) {
 		fprintf(stderr, "QUEUE\n");
@@ -91,7 +94,7 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, c
 		do_get_command(dbfile, db, key);
 	} else if(!strncmp(command, "iterate", 7)) {
 		fprintf(stderr, "ITERATING\n");
-		do_iterate_command(dbfile, db);
+		do_iterate_command(dbfile, db, key);
 	} else {
 		fprintf(stderr, "fail: unknown command\n");
 		fprintf(stdout, "fail: unknown command\n");
