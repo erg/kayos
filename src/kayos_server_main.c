@@ -10,9 +10,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "errors.h"
 #include "io.h"
-#include "kayos_paths.h"
-#include "utils.h"
+#include "paths.h"
 
 const char SERVER_PRODUCERS_PORT[] = "9890";
 const char SERVER_CONSUMERS_PORT[] = "9891";
@@ -110,12 +110,12 @@ int main(int argc, char *argv[]) {
 		if(FD_ISSET(producers_fd, &readfds)) {
 			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer-client", "kayosdbs/test");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer", "kayosdbs/test");
 		}
 		if(FD_ISSET(consumers_fd, &readfds)) {
 			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer-client", "kayosdbs/test");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer", "kayosdbs/test");
 		}
 	} while(1);
 

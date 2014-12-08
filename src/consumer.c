@@ -1,4 +1,4 @@
-#include "consumer_client.h"
+#include "consumer.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -8,21 +8,9 @@
 #include <forestdb.h>
 #include <jansson.h>
 
-#include "kayos_common.h"
+#include "both.h"
 #include "buffer.h"
 #include "io.h"
-#include "utils.h"
-
-// Allocates, call free on return value
-char *doc_to_string(fdb_doc *rdoc) {
-	json_t *dict = json_object();
-	json_object_set_new(dict, "key", json_stringn(rdoc->key, rdoc->keylen));
-	json_object_set_new(dict, "meta", json_stringn(rdoc->meta, rdoc->metalen));
-	json_object_set_new(dict, "body", json_stringn(rdoc->body, rdoc->bodylen));
-	json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
-	char *result = json_dumps(dict, 0);
-	return result;
-}
 
 void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	const char *key) {
@@ -41,25 +29,25 @@ void do_get_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	}
 }
 
-void do_queue_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
-	const char *key) {
-	// open queue or lookup, switch current queue
-}
-
-void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
-	const char *key) {
-
-	int start = 0;
-
-	if(key) {
-		start = atoi(key);
-	}
-
+void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, const char *key) {
 	fdb_status status;
 	fdb_iterator *iterator;
 	fdb_doc *rdoc;
+
+	fdb_seqnum_t start = 0;
+	if(key) {
+		char *end;
+		long long value = strtoll(key, &end, 10); 
+		if (end == key || *end != '\0' || errno == ERANGE) {
+			fprintf(stderr, "strtol failed: key = %s\n", key);
+			return;
+		} else {
+			start = value;
+		}
+	}
+
 	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
-	fprintf(stderr, "fdb_iterator_sequence_init status: %d\n", status);
+	fprintf(stderr, "fdb_iterator_sequence_init status: %d, start: %llu\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
 		fprintf(stderr, "fdb_iterator_sequence_init failed");
 		return;
@@ -80,15 +68,12 @@ void do_iterate_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	fdb_iterator_close(iterator);
 }
 
-void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
-	const char *command,
-	const char *key, size_t key_length,
-	const char *val, size_t val_length) {
+void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length) {
 
 	fprintf(stderr, "executing fdb consumer command: %s\n", command);
-	if(!strncmp(command, "queue", 5)) {
-		fprintf(stderr, "QUEUE\n");
-		do_queue_command(dbfile, db, key);
+	if(!strncmp(command, "topic", 5)) {
+		fprintf(stderr, "TOPIC\n");
+		do_topic_command(dbfile, db, key);
 	} else if(!strncmp(command, "get", 3)) {
 		fprintf(stderr, "GETTING\n");
 		do_get_command(dbfile, db, key);

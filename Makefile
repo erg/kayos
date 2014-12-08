@@ -5,8 +5,8 @@ CXX = clang++
 CFLAGS = -Wall -Wpedantic -g -std=c99
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 SERVER_LIBS =
-PRODUCER_CLIENT_LIBS = -lforestdb -ljansson
-CONSUMER_CLIENT_LIBS = -lforestdb -ljansson
+PRODUCER_LIBS = -lforestdb -ljansson
+CONSUMER_LIBS = -lforestdb -ljansson
 TEST_BUFFER_LIBS =
 TESTER_LIBS = -ljansson
 INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb
@@ -27,46 +27,47 @@ endif
 LIBNAME = $(DLL_PREFIX)$(LIBBASE)$(DLL_SUFFIX)$(DLL_EXTENSION)
 
 MASTER_HEADERS = src/buffer.h \
+	src/hexdump.h \
 	src/io.h \
-	src/utils.h
+	src/paths.h
 
 SERVER_HEADERS = $(MASTER_HEADERS)
 
-PRODUCER_CLIENT_HEADERS = $(MASTER_HEADERS) \
-	src/http.h \
-	src/producer_client.h \
-	src/kayos_common.h
+PRODUCER_HEADERS = $(MASTER_HEADERS) \
+	src/both.h \
+	src/producer.h
 
-CONSUMER_CLIENT_HEADERS = $(MASTER_HEADERS) \
+CONSUMER_HEADERS = $(MASTER_HEADERS) \
+	src/both.h \
 	src/http.h \
-	src/consumer_client.h \
-	src/kayos_common.h
+	src/consumer.h
 
 # core binaries
 DLL_OBJS = $(PLAF_DLL_OBJS) \
 	src/buffer.o \
-	src/io.o \
-	src/utils.o
+	src/errors.o \
+	src/hexdump.o \
+	src/io.o
 
 SERVER_OBJS = $(DLL_OBJS) \
-	src/kayos_paths.o \
+	src/paths.o \
 	src/kayos_server_main.o
 
-PRODUCER_CLIENT_OBJS = $(DLL_OBJS) \
-	src/http.o \
-	src/kayos_common.o \
-	src/kayos_paths.o \
-	src/consumer_client.o \
-	src/producer_client.o \
-	src/kayos_producer_client_main.o
+PRODUCER_OBJS = $(DLL_OBJS) \
+	src/both.o \
+	src/paths.o \
+	src/producer.o \
+	src/producer_http.o \
+	src/producer_json.o \
+	src/kayos_producer_main.o
 
-CONSUMER_CLIENT_OBJS = $(DLL_OBJS) \
-	src/http.o \
-	src/kayos_common.o \
-	src/kayos_paths.o \
-	src/consumer_client.o \
-	src/producer_client.o \
-	src/kayos_consumer_client_main.o
+CONSUMER_OBJS = $(DLL_OBJS) \
+	src/both.o \
+	src/paths.o \
+	src/consumer.o \
+	src/consumer_http.o \
+	src/consumer_json.o \
+	src/kayos_consumer_main.o
 
 # test binaries
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
@@ -76,9 +77,9 @@ TESTER_OBJS = $(DLL_OBJS) \
 	tester/tester.o \
 	tester/tester_main.o
 
-.PHONY: kayos-server kayos-producer-client kayos-consumer-client test-buffer tester clean directories
+.PHONY: kayos-server kayos-producer kayos-consumer test-buffer tester clean directories
 
-ALL = directories kayos-server kayos-producer-client kayos-consumer-client test-buffer tester
+ALL = directories kayos-server kayos-producer kayos-consumer test-buffer tester
 
 default:
 	$(MAKE) $(ALL)
@@ -86,11 +87,11 @@ default:
 kayos-server: $(SERVER_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-server $(CFLAGS) $(INCLUDE_PATHS) $(SERVER_LIBS) $(SERVER_OBJS)
 
-kayos-producer-client: $(PRODUCER_CLIENT_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-producer-client $(CFLAGS) $(INCLUDE_PATHS) $(PRODUCER_CLIENT_LIBS) $(PRODUCER_CLIENT_OBJS)
+kayos-producer: $(PRODUCER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-producer $(CFLAGS) $(INCLUDE_PATHS) $(PRODUCER_LIBS) $(PRODUCER_OBJS)
 
-kayos-consumer-client: $(CONSUMER_CLIENT_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-consumer-client $(CFLAGS) $(INCLUDE_PATHS) $(CONSUMER_CLIENT_LIBS) $(CONSUMER_CLIENT_OBJS)
+kayos-consumer: $(CONSUMER_OBJS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR)/kayos-consumer $(CFLAGS) $(INCLUDE_PATHS) $(CONSUMER_LIBS) $(CONSUMER_OBJS)
 
 test-buffer: $(TEST_BUFFER_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/test-buffer $(CFLAGS) $(TEST_INCLUDE_PATHS) $(TEST_BUFFER_LIBS) $(TEST_BUFFER_OBJS)

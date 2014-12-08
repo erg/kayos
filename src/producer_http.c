@@ -1,13 +1,14 @@
+#include "producer_http.h"
+
+#include <stdio.h>
 #include <string.h>
 
-#include "http.h"
-#include "kayos_common.h"
-#include "consumer_client.h"
-
+#include "both.h"
 #include "buffer.h"
-#include "utils.h"
+#include "consumer.h"
+#include "hexdump.h"
 
-size_t handle_http(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler handler, char *command, char *ptr, size_t len) {
+size_t handle_producer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, char *command, char *ptr, size_t len) {
 	char *end = ptr + len;
 	fprintf(stderr, "http command: %s\n", command);
 	named_hexdump(stderr, "handle_http", ptr, len);
@@ -23,9 +24,6 @@ size_t handle_http(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler
 	fprintf(stderr, "headers: %s\n", headers);
 
     if(!strncmp(command, "GET", 3)) {
-		if(!strncmp(url, "/_iterate", 9)) {
-			do_iterate_command(dbfile, db);
-		}
 	}
     else if(!strncmp(command, "PUT", 3)) {
 	}

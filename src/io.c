@@ -3,7 +3,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include "utils.h"
+#include <stdio.h>
+#include <sys/stat.h>
+#include <string.h>
+
+#include "errors.h"
 
 ssize_t safe_read(int fd, char* data, ssize_t size) {
 	ssize_t nbytes = read(fd, data, size-1);
@@ -82,7 +86,6 @@ void close_stdout() {
     close(1);
 }
 
-
 void *safe_malloc(size_t size) {
 	void *ptr = malloc(size);
 	if(!ptr)
@@ -102,4 +105,29 @@ void *malloc_vsnprintf(const char * restrict format, ...) {
 	vsnprintf(ptr, len + 1, format, args);
 	va_end(args);
 	return ptr;
+}
+
+int safe_mkdir(const char *path, mode_t mode) {
+    int ret;
+    ret = mkdir(path, mode);
+    if(ret == -1 && errno != EEXIST)
+        return -1;
+    return 0;
+}
+
+// http://stackoverflow.com/questions/2336242/recursive-mkdir-system-call-on-unix
+int mkpath(char* path, mode_t mode) {
+    if(!path)
+        return 0;
+
+    char *p;
+    for(p = strchr(path + 1, '/'); p; p = strchr(p + 1, '/')) {
+        *p = '\0';
+        if(safe_mkdir(path, mode) == -1) {
+            *p = '/';
+            return -1;
+        }
+        *p = '/';
+    }
+    return safe_mkdir(path, mode);
 }

@@ -4,9 +4,9 @@
 #include <sys/types.h>
 
 // Unix wrappers
-ssize_t safe_read(int fd, char* data, ssize_t size);
-ssize_t safe_write_impl(int fd, const void* data, size_t size, size_t written);
-ssize_t safe_write(int fd, const void* data, size_t size);
+ssize_t safe_read(int fd, char *data, ssize_t size);
+ssize_t safe_write_impl(int fd, const void *data, size_t size, size_t written);
+ssize_t safe_write(int fd, const void *data, size_t size);
 int safe_open(const char *path, int oflag, ...);
 
 void safe_pipe(int fd[2]);
@@ -17,7 +17,9 @@ void redirect_child_stdin_stdout(int new_stdin, int new_stdout);
 void close_stdout();
 
 void *safe_malloc(size_t size);
-void *malloc_vsnprintf(const char * restrict format, ...);
+void *malloc_vsnprintf(const char *restrict format, ...);
 
+int safe_mkdir(const char *path, mode_t mode);
+int mkpath(char *path, mode_t mode);
 
 #endif

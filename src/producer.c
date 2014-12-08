@@ -1,4 +1,4 @@
-#include "producer_client.h"
+#include "producer.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -7,10 +7,10 @@
 
 #include <forestdb.h>
 
-#include "kayos_common.h"
+#include "both.h"
 #include "buffer.h"
+#include "errors.h"
 #include "io.h"
-#include "utils.h"
 
 void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db, char *command, char *key, size_t key_length, char *val, size_t val_length) {
     fdb_status status;
