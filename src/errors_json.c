@@ -117,9 +117,8 @@ void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_ke
 
 	if(key_ptr) {
 		while(*key_ptr) {
-			json_t *value = get_json_string(json_errors, json, *key_ptr);
-			if(!value)
-				add_expected_json_key_error(json_errors, *key_ptr);
+			// side effect is key will get added to json_errors if not found
+			get_json_string_required(json_errors, json, *key_ptr);
 			key_ptr++;
 		}
 	}
@@ -131,9 +130,8 @@ void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_ke
 		const char *key = json_object_iter_key(iter);
 		json_key_type type = which_key(required_keys, optional_keys, key);
 
-		if(type == KEY_NOT_FOUND) {
+		if(type == KEY_NOT_FOUND)
 			add_unexpected_json_key_error(json_errors, key);
-		}
 
 		iter = json_object_iter_next(json, iter);
 	} while(iter);
@@ -143,10 +141,12 @@ int json_errors_p(json_t *json_errors) {
 	return json_array_size(json_errors) > 0;
 }
 
-// Must call safe_json_decref on return value
-json_t *get_json_string(json_t *json_errors, json_t *json, const char *key) {
+json_t *get_json_string_required(json_t *json_errors, json_t *json, const char *key) {
 	json_t *value = json_object_get(json, key);
-	if(!json_is_string(value)) {
+	if(!value) {
+		add_expected_json_key_error(json_errors, key);
+		return NULL;
+	} else if(!json_is_string(value)) {
 		add_expected_json_string_error(json_errors, key);
 		return NULL;
 	} else {
@@ -154,10 +154,36 @@ json_t *get_json_string(json_t *json_errors, json_t *json, const char *key) {
 	}
 }
 
-// Must call safe_json_decref on return value
-json_t *get_json_integer(json_t *json_errors, json_t *json, const char *key) {
+json_t *get_json_integer_required(json_t *json_errors, json_t *json, const char *key) {
 	json_t *value = json_object_get(json, key);
-	if(!json_is_integer(value)) {
+	if(!value) {
+		add_expected_json_key_error(json_errors, key);
+		return NULL;
+	} else if(!json_is_integer(value)) {
+		add_expected_json_integer_error(json_errors, key);
+		return NULL;
+	} else {
+		return value;
+	}
+}
+
+json_t *get_json_string_optional(json_t *json_errors, json_t *json, const char *key) {
+	json_t *value = json_object_get(json, key);
+	if(!value) {
+		return NULL;
+	} else if(!json_is_string(value)) {
+		add_expected_json_string_error(json_errors, key);
+		return NULL;
+	} else {
+		return value;
+	}
+}
+
+json_t *get_json_integer_optional(json_t *json_errors, json_t *json, const char *key) {
+	json_t *value = json_object_get(json, key);
+	if(!value) {
+		return NULL;
+	} else if(!json_is_integer(value)) {
 		add_expected_json_integer_error(json_errors, key);
 		return NULL;
 	} else {

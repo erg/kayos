@@ -184,8 +184,9 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 }
 
 ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t json_handler, char *buffer, size_t len) {
+#ifdef DEBUG
 	named_hexdump(stderr, "parse_json", buffer, len);
-	//buffer[len-1] = 0;
+#endif
 
 	json_error_t error;
 	json_t *json;

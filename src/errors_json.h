@@ -42,7 +42,9 @@ void add_custom_json_error(json_t *json_errors, const char *key, const char *val
 json_key_type which_key(const char *required_keys[], const char *optional_keys[], const char *candidate);
 void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_keys[], const char *optional_keys[]);
 int json_errors_p(json_t *json_errors);
-json_t *get_json_string(json_t *json_errors, json_t *json, const char *key);
-json_t *get_json_integer(json_t *json_errors, json_t *json, const char *key);
+json_t *get_json_string_required(json_t *json_errors, json_t *json, const char *key);
+json_t *get_json_integer_required(json_t *json_errors, json_t *json, const char *key);
+json_t *get_json_string_optional(json_t *json_errors, json_t *json, const char *key);
+json_t *get_json_integer_optional(json_t *json_errors, json_t *json, const char *key);
 
 #endif
