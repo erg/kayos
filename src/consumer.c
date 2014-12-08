@@ -13,7 +13,6 @@
 #include "io.h"
 
 void do_get_command(fdb_kvs_handle *db, const char *key) {
-
 	fdb_status status;
 	fdb_doc *rdoc;
 

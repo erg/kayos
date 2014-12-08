@@ -78,16 +78,12 @@ void add_expected_json_integer_error(json_t *json_errors, const char *key) {
 	json_array_append_new(json_errors, error);
 }
 
-void add_custom_json_error(json_t *json_errors, const char *key, const char *value) {
+void add_custom_json_error(json_t *json_errors, const char *key, const char *value,
+	const char *key2, const char *value2) {
 	json_t *error = make_json_base_error(NULL);
 	json_object_set_new(error, key, json_string(value));
+	json_object_set_new(error, key2, json_string(value2));
 	json_array_append_new(json_errors, error);
-}
-
-// Handle json_decref on NULL
-void safe_json_decref(json_t *json) {
-	if(json)
-		json_decref(json);
 }
 
 json_key_type which_key(const char *required_keys[], const char *optional_keys[], const char *candidate) {
@@ -119,15 +115,11 @@ json_key_type which_key(const char *required_keys[], const char *optional_keys[]
 void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_keys[], const char *optional_keys[]) {
 	char **key_ptr = (char **)required_keys;
 
-	fprintf(stderr, "ensure_json_keys: ptr: %s\n", *key_ptr);
-
 	if(key_ptr) {
 		while(*key_ptr) {
 			json_t *value = get_json_string(json_errors, json, *key_ptr);
 			if(!value)
 				add_expected_json_key_error(json_errors, *key_ptr);
-
-			safe_json_decref(value);
 			key_ptr++;
 		}
 	}
@@ -147,15 +139,8 @@ void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_ke
 	} while(iter);
 }
 
-int send_json_errors_p(json_t *json_errors) {
-	if(json_array_size(json_errors) > 0) {
-		print_json_object(stdout, json_errors);
-		return 1;
-	}
-	else {
-		fprintf(stderr, "no json_errors\n");
-		return 0;
-	}
+int json_errors_p(json_t *json_errors) {
+	return json_array_size(json_errors) > 0;
 }
 
 // Must call safe_json_decref on return value
@@ -163,7 +148,6 @@ json_t *get_json_string(json_t *json_errors, json_t *json, const char *key) {
 	json_t *value = json_object_get(json, key);
 	if(!json_is_string(value)) {
 		add_expected_json_string_error(json_errors, key);
-		json_decref(value);
 		return NULL;
 	} else {
 		return value;
@@ -175,7 +159,6 @@ json_t *get_json_integer(json_t *json_errors, json_t *json, const char *key) {
 	json_t *value = json_object_get(json, key);
 	if(!json_is_integer(value)) {
 		add_expected_json_integer_error(json_errors, key);
-		json_decref(value);
 		return NULL;
 	} else {
 		return value;
@@ -188,7 +171,6 @@ int string_to_seqnum(char *str, fdb_seqnum_t *in_out) {
 		char *end;
 		unsigned long long value = strtoull(str, &end, 10); 
 		if (end == str || *end != '\0' || errno == ERANGE) {
-			fprintf(stderr, "strtoull failed: str = %s\n", str);
 			return 0;
 		} else {
 			success = 1;

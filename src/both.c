@@ -197,9 +197,8 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t j
 		json_print_error(error);
 		return len - error.position;
 	}
-
-	fprintf(stderr, "json_loads() succeeded!\n");
-	json_print_error(error);
+	// error is really parsing results, need not have an error condition
+	// json_print_error(error);
 
 	// [{},{},{}]
 	if(json_is_array(json)) {
@@ -208,11 +207,11 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t j
 		json_array_foreach(json, index, value) {
 			json_handler(db, json);
 		}
-	} else {
 	// {}
+	} else
 		json_handler(db, json);
-	}
 
+	json_decref(json);
 	return len - error.position;
 }
 
