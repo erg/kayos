@@ -19,9 +19,6 @@ Build forestdb:
 Build jansson:
 * ``mkdir -p jansson/build && cd jansson/build && cmake .. && make -j && make install && cd ../../``
 
-Build libuv:
-* ``cd libuv && ./autogen.sh && ./configure && make -j && make install && cd ../``
-
 To build kayos:
 * ``make``
 * ``make DEBUG=1``
