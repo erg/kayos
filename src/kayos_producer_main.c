@@ -14,7 +14,12 @@ int main(int argc, char *argv[]) {
 
 	ensure_kayos_data_path();
 	char *dbname = argv[1];
-	client_loop(dbname, do_forestdb_producer_command, handle_producer_http, call_producer_json);
+
+	client_loop(dbname,
+		do_forestdb_producer_command,
+		handle_producer_http,
+		call_producer_json);
+
 	close_stdout();
 	return 0;
 }

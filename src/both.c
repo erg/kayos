@@ -75,7 +75,11 @@ void do_topic_command(fdb_kvs_handle *db,
 }
 
 
-void client_loop(const char *dbname, forestdb_handler_t handler, http_handler_t handle_http, json_handler_t json_handler) {
+void client_loop(const char *dbname,
+	forestdb_handler_t handler,
+	http_handler_t handle_http,
+	json_handler_t json_handler) {
+
 	size_t remaining = 0;
 
 	fdb_file_handle *dbfile = NULL;
@@ -183,7 +187,10 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	return remaining;
 }
 
-ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t json_handler, char *buffer, size_t len) {
+ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	json_handler_t json_handler,
+	char *buffer, size_t len) {
+
 #ifdef DEBUG
 	named_hexdump(stderr, "parse_json", buffer, len);
 #endif
@@ -216,12 +223,19 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_handler_t j
 	return len - error.position;
 }
 
-size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, char *line, size_t len) {
+size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	forestdb_handler_t handler,
+	char *line, size_t len) {
+
 	fatal_error("unimplemented parse_binary");
 	return 0;
 }
 
-ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db, forestdb_handler_t handler, http_handler_t http_handler, char *line, size_t len) {
+ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+	forestdb_handler_t handler,
+	http_handler_t http_handler,
+	char *line, size_t len) {
+
 #ifdef DEBUG
 	fprintf(stderr, "parse_line called\n");
 #endif

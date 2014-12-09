@@ -37,10 +37,19 @@ void add_expected_json_key_error(json_t *json_errors, const char *key);
 void add_unexpected_json_key_error(json_t *json_errors, const char *key);
 void add_expected_json_string_error(json_t *json_errors, const char *key);
 void add_expected_json_integer_error(json_t *json_errors, const char *key);
-void add_custom_json_error(json_t *json_errors, const char *key, const char *value, const char *key2, const char *value2);
 
-json_key_type which_key(const char *required_keys[], const char *optional_keys[], const char *candidate);
-void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_keys[], const char *optional_keys[]);
+void add_custom_json_error(json_t *json_errors,
+	const char *key, const char *value,
+	const char *key2, const char *value2);
+
+json_key_type which_key(const char *required_keys[],
+	const char *optional_keys[],
+	const char *candidate);
+
+void ensure_json_keys(json_t *json_errors, json_t *json,
+	const char *required_keys[],
+	const char *optional_keys[]);
+
 int json_errors_p(json_t *json_errors);
 json_t *get_json_string_required(json_t *json_errors, json_t *json, const char *key);
 json_t *get_json_integer_required(json_t *json_errors, json_t *json, const char *key);

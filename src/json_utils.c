@@ -86,7 +86,10 @@ void add_custom_json_error(json_t *json_errors, const char *key, const char *val
 	json_array_append_new(json_errors, error);
 }
 
-json_key_type which_key(const char *required_keys[], const char *optional_keys[], const char *candidate) {
+json_key_type which_key(const char *required_keys[],
+	const char *optional_keys[],
+	const char *candidate) {
+
 	if(!candidate)
 		return KEY_NOT_FOUND;
 
@@ -112,7 +115,10 @@ json_key_type which_key(const char *required_keys[], const char *optional_keys[]
 }
 
 // Return 0 on success
-void ensure_json_keys(json_t *json_errors, json_t *json, const char *required_keys[], const char *optional_keys[]) {
+void ensure_json_keys(json_t *json_errors, json_t *json,
+	const char *required_keys[],
+	const char *optional_keys[]) {
+
 	char **key_ptr = (char **)required_keys;
 
 	if(key_ptr) {

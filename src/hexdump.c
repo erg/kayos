@@ -40,7 +40,9 @@ void hexdump(FILE *stream, const char *buf, const uint64_t len) {
 	}
 }
 
-void named_hexdump(FILE *stream, const char *title, const char *buf, const uint64_t len) {
+void named_hexdump(FILE *stream, const char *title,
+	const char *buf, const uint64_t len) {
+
 	fprintf(stream, "Hexdump: %s, %lld bytes\n", title, len);
 	hexdump(stream, buf, len);
 }

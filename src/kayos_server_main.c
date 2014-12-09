@@ -17,6 +17,12 @@
 const char SERVER_PRODUCERS_PORT[] = "9890";
 const char SERVER_CONSUMERS_PORT[] = "9891";
 
+static int init_socket(const char *servname);
+static int accept_client(int sockfd,
+	struct sockaddr_storage* their_addr,
+	socklen_t *addr_size);
+static void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char *dbpath);
+
 int init_socket(const char *servname) {
 	int ret;
 	struct addrinfo addrinfo, *res;
@@ -47,7 +53,10 @@ int init_socket(const char *servname) {
 	return sock_fd;
 }
 
-int accept_client(int sockfd, struct sockaddr_storage* their_addr, socklen_t *addr_size) {
+int accept_client(int sockfd,
+	struct sockaddr_storage* their_addr,
+	socklen_t *addr_size) {
+
 	int new_fd = accept(sockfd, (struct sockaddr *)their_addr, addr_size);
 	if(new_fd == -1)
 		libc_fatal_error("accept failed");

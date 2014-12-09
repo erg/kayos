@@ -10,7 +10,8 @@
 #include "json_utils.h"
 
 void call_json_set(fdb_file_handle *dbfile, fdb_kvs_handle *db,
-	json_t *json_errors, json_t *json) {
+	json_t *json_errors,
+	json_t *json) {
 
 	const char *key = json_string_value(
 		get_json_string_required(json_errors, json, "key"));
@@ -25,7 +26,8 @@ void call_json_set(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 }
 
 void call_json_delete(fdb_file_handle *dbfile, fdb_kvs_handle *db,
-	json_t *json_errors, json_t *json) {
+	json_t *json_errors,
+	json_t *json) {
 
 	const char *key = json_string_value(
 		get_json_string_required(json_errors, json, "key"));
@@ -35,7 +37,10 @@ void call_json_delete(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 }
 
 
-void call_producer_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json) {
+void call_producer_json(fdb_file_handle *dbfile,
+	fdb_kvs_handle *db,
+	json_t *json) {
+
 	json_t *json_errors = new_json_errors();
 	const char *command = json_string_value(
 		get_json_string_required(json_errors, json, "command"));

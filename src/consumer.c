@@ -40,11 +40,9 @@ void do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start) {
 
 	while(1) {
 		status = fdb_iterator_next(iterator, &rdoc);
-		//fprintf(stderr, "fdb_iterator_next status: %d\n", status);
 		if (status == FDB_RESULT_ITERATOR_FAIL) break;
 
 		char *result = doc_to_string(rdoc);
-		//fprintf(stderr, "%s\n", result);
 		fprintf(stdout, "%s\n", result);
 		fflush(stdout);
 
