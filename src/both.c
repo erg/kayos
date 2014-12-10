@@ -211,9 +211,9 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	// [{},{},{}]
 	if(json_is_array(json)) {
 		size_t index;
-		json_t *value;
-		json_array_foreach(json, index, value) {
-			json_handler(dbfile, db, json);
+		json_t *json_elt;
+		json_array_foreach(json, index, json_elt) {
+			json_handler(dbfile, db, json_elt);
 		}
 	// {}
 	} else
