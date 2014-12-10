@@ -58,20 +58,22 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	void *value, size_t value_length) {
 
 	fprintf(stderr, "executing fdb consumer command: %s\n", command);
-	if(!strncmp(command, "topic", 5)) {
-		fprintf(stderr, "TOPIC\n");
-		do_topic_command(db, key);
-	} else if(!strncmp(command, "get", 3)) {
-		fprintf(stderr, "GETTING\n");
-		do_get_command(db, key);
-	} else if(!strncmp(command, "iterate", 7)) {
-		fprintf(stderr, "ITERATING\n");
-		fdb_seqnum_t start = 0;
-		string_to_seqnum(key, &start);
-		do_iterate_command(db, start);
-	} else {
-		//fprintf(stderr, "fail: unknown command\n");
-		fprintf(stdout, "fail: unknown command\n");
+	if(command) {
+		if(!strcmp(command, "topic")) {
+			fprintf(stderr, "TOPIC\n");
+			do_topic_command(db, key);
+		} else if(!strcmp(command, "get")) {
+			fprintf(stderr, "GETTING\n");
+			do_get_command(db, key);
+		} else if(!strcmp(command, "iterate")) {
+			fprintf(stderr, "ITERATING\n");
+			fdb_seqnum_t start = 0;
+			string_to_seqnum(key, &start);
+			do_iterate_command(db, start);
+		} else {
+			//fprintf(stderr, "fail: unknown command\n");
+			fprintf(stdout, "fail: unknown command\n");
+		}
 	}
 }
 
