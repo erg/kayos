@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include <forestdb.h>
 
-void do_get_command(fdb_kvs_handle *db, const char *key);
-void do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start);
+#include "both.h"
+
+fdb_status do_get_command(fdb_kvs_handle *db, const char *key, fdb_doc_print_t cb);
+fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_print_t cb);
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	char *command,
 	void *key, size_t key_length,

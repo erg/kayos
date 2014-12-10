@@ -20,18 +20,23 @@ typedef size_t http_handler_t(fdb_file_handle *dbfile,fdb_kvs_handle *db,
 
 typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json);
 
+typedef void fdb_doc_print_t(fdb_doc *doc);
+
 int client_usage(int argc, char *argv[]);
 fdb_file_handle *init_fdb_file_handle(const char *path);
 fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile);
 
 // Forestdb
-char *doc_to_string(fdb_doc *rdoc);
+
+char *doc_to_string(fdb_doc *doc);
 
 // returns 1 if success
 int string_to_seqnum(char *str, fdb_seqnum_t *in_out);
 
 // Commands
-void do_topic_command(fdb_kvs_handle *db, const char *dbname);
+fdb_status do_topic_command(fdb_kvs_handle *db, const char *dbname);
+
+void command_ok(fdb_status status);
 
 // Parser
 void parse_key_value(const char *line, char **key, char **value);

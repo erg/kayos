@@ -10,7 +10,7 @@ PRODUCER_LIBS = -lforestdb -ljansson
 CONSUMER_LIBS = -lforestdb -ljansson
 TEST_BUFFER_LIBS =
 TESTER_LIBS = -ljansson
-INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb
+INCLUDE_PATHS = -I ./src -I /usr/local/include -I ./forestdb/include/libforestdb -I ./http-parser
 TEST_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tests
 TESTER_INCLUDE_PATHS = $(INCLUDE_PATHS) -I ./tester
 
@@ -36,11 +36,12 @@ SERVER_HEADERS = $(MASTER_HEADERS)
 
 PRODUCER_HEADERS = $(MASTER_HEADERS) \
 	src/both.h \
+	src/http-parser/http-parser.h \
 	src/producer.h
 
 CONSUMER_HEADERS = $(MASTER_HEADERS) \
 	src/both.h \
-	src/http.h \
+	http-parser/http_parser.h \
 	src/consumer.h
 
 # core binaries
@@ -61,6 +62,7 @@ PRODUCER_OBJS = $(DLL_OBJS) \
 	src/producer.o \
 	src/producer_http.o \
 	src/producer_json.o \
+	http-parser/http_parser.o \
 	src/kayos_producer_main.o
 
 CONSUMER_OBJS = $(DLL_OBJS) \
@@ -70,6 +72,7 @@ CONSUMER_OBJS = $(DLL_OBJS) \
 	src/consumer.o \
 	src/consumer_http.o \
 	src/consumer_json.o \
+	http-parser/http_parser.o \
 	src/kayos_consumer_main.o
 
 # test binaries

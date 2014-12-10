@@ -3,15 +3,34 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <http_parser.h>
+
 #include "both.h"
 #include "buffer.h"
 #include "consumer.h"
 #include "hexdump.h"
 
+static int consumer_cb(http_parser*, const char *at, size_t length);
+
+int consumer_cb(http_parser* parser, const char *at, size_t length) {
+	return 0;
+}
+
 size_t handle_consumer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	forestdb_handler_t handler,
 	char *command,
 	char *ptr, size_t len) {
+
+	// http_parser_settings settings;
+	// settings.on_url = my_url_callback;
+	// settings.on_header_field = my_header_field_callback;
+	/* ... */
+
+	// http_parser *parser = malloc(sizeof(http_parser));
+	// http_parser_init(parser, HTTP_REQUEST);
+	// parser->data = my_socket;
+
+	/*
 	char *end = ptr + len;
 
 	fprintf(stderr, "http command: %s\n", command);
@@ -41,6 +60,8 @@ size_t handle_consumer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	else {
 		fprintf(stderr, "unknown http command: %s\n", command);
 	}
+
+	*/
 
 	return -1;
 }

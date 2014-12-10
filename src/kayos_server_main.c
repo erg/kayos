@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "both.h"
 #include "errors.h"
 #include "io.h"
 #include "paths.h"
@@ -22,6 +23,7 @@ static int accept_client(int sockfd,
 	struct sockaddr_storage* their_addr,
 	socklen_t *addr_size);
 static void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char *dbpath);
+static int server_usage(int argc, char *argv[]);
 
 int init_socket(const char *servname) {
 	int ret;
@@ -91,8 +93,18 @@ void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char 
 	}
 }
 
+static int server_usage(int argc, char *argv[]) {
+    fprintf(stderr, "usage: %s dbpath\n", argv[0]);
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
+	if(argc != 2) {
+        return server_usage(argc, argv);
+    }
+
 	ensure_kayos_data_path();
+	char *dbname = argv[1];
 
 	struct sockaddr_storage their_addr;
 	socklen_t addr_size = sizeof(their_addr);
@@ -119,12 +131,12 @@ int main(int argc, char *argv[]) {
 		if(FD_ISSET(producers_fd, &readfds)) {
 			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer", "kayosdbs/test");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer", dbname);
 		}
 		if(FD_ISSET(consumers_fd, &readfds)) {
 			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer", "kayosdbs/test");
+			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer", dbname);
 		}
 	} while(1);
 

@@ -51,12 +51,12 @@ fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile) {
 }
 
 // Allocates, call free on return value
-char *doc_to_string(fdb_doc *rdoc) {
+char *doc_to_string(fdb_doc *doc) {
 	json_t *dict = json_object();
-	json_object_set_new(dict, "key", json_stringn(rdoc->key, rdoc->keylen));
-	json_object_set_new(dict, "meta", json_stringn(rdoc->meta, rdoc->metalen));
-	json_object_set_new(dict, "body", json_stringn(rdoc->body, rdoc->bodylen));
-	json_object_set_new(dict, "seqnum", json_integer(rdoc->seqnum));
+	json_object_set_new(dict, "key", json_stringn(doc->key, doc->keylen));
+	json_object_set_new(dict, "meta", json_stringn(doc->meta, doc->metalen));
+	json_object_set_new(dict, "body", json_stringn(doc->body, doc->bodylen));
+	json_object_set_new(dict, "seqnum", json_integer(doc->seqnum));
 	char *result = json_dumps(dict, 0);
 	if(!result) fatal_error("json_dumps() failed");
 	json_decref(dict);
@@ -67,13 +67,22 @@ void parse_key_value(const char *line, char **key, char **value) {
 	unimplemented("parse_key_value()");
 }
 
-void do_topic_command(fdb_kvs_handle *db,
+fdb_status do_topic_command(fdb_kvs_handle *db,
 	const char *dbname) {
 	// open topic or lookup, switch current topic
 
+	fdb_status status = FDB_RESULT_INVALID_ARGS;
+
 	unimplemented("do_topic_command()");
+	return FDB_RESULT_INVALID_ARGS;
 }
 
+void command_ok(fdb_status status) {
+	if(status == FDB_RESULT_SUCCESS)
+		fprintf(stdout, "OK\n");
+	else
+		fprintf(stdout, "FAIL: %s\n", fdb_error_msg(status));
+}
 
 void client_loop(const char *dbname,
 	forestdb_handler_t handler,

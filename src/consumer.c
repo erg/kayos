@@ -12,44 +12,56 @@
 #include "buffer.h"
 #include "io.h"
 
-void do_get_command(fdb_kvs_handle *db, const char *key) {
-	fdb_status status;
-	fdb_doc *rdoc;
+static void telnet_print_doc(fdb_doc *doc);
+static void telnet_print_key_doc(fdb_doc *doc);
 
-	fdb_doc_create(&rdoc, (void*)key, strlen(key),
+fdb_status do_get_command(fdb_kvs_handle *db, const char *key, fdb_doc_print_t print_cb) {
+    fdb_status status = FDB_RESULT_INVALID_ARGS;
+	fdb_doc *doc;
+
+	fdb_doc_create(&doc, (void*)key, strlen(key),
 			NULL, 0, NULL, 0);
-	status = fdb_get(db, rdoc);
-	if(status == FDB_RESULT_SUCCESS)
-		fprintf(stdout, "%s\n", doc_to_string(rdoc));
+	status = fdb_get(db, doc);
+	if(status == FDB_RESULT_SUCCESS) {
+		//fprintf(stdout, "%s\n", doc_to_string(doc));
+		print_cb(doc);
+	}
 	else if(status == FDB_RESULT_KEY_NOT_FOUND)
 		fprintf(stdout, "{\"status\": \"fail\", \"reason\": \"NO_KEY\"}\n");
-	fdb_doc_free(rdoc);
+	fdb_doc_free(doc);
+	return status;
 }
 
-void do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start) {
-	fdb_status status;
+fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_print_t print_cb) {
+    fdb_status status = FDB_RESULT_INVALID_ARGS;
 	fdb_iterator *iterator;
-	fdb_doc *rdoc;
+	fdb_doc *doc;
 
 	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
 	fprintf(stderr, "fdb_iterator_sequence_init status: %d, start: %llu\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
 		fprintf(stderr, "fdb_iterator_sequence_init failed");
-		return;
+		return status;
 	}
 
 	while(1) {
-		status = fdb_iterator_next(iterator, &rdoc);
+		status = fdb_iterator_next(iterator, &doc);
 		if (status == FDB_RESULT_ITERATOR_FAIL) break;
-
-		char *result = doc_to_string(rdoc);
-		fprintf(stdout, "%s\n", result);
-		fflush(stdout);
-
-		free(result);
-		fdb_doc_free(rdoc);
+		print_cb(doc);
+		fdb_doc_free(doc);
 	}
+
+	fflush(stdout);
 	fdb_iterator_close(iterator);
+	return status;
+}
+
+static void telnet_print_doc(fdb_doc *doc) {
+	fprintf(stdout, "%llu, %s\n", doc->seqnum, doc->body);
+}
+
+static void telnet_print_key_doc(fdb_doc *doc) {
+	fprintf(stdout, "%llu, %s, %s\n", doc->seqnum, doc->key, doc->body);
 }
 
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
@@ -57,19 +69,18 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
 
-	fprintf(stderr, "executing fdb consumer command: %s\n", command);
+	fdb_status ret;
+
 	if(command) {
 		if(!strcmp(command, "topic")) {
-			fprintf(stderr, "TOPIC\n");
-			do_topic_command(db, key);
+			ret = do_topic_command(db, key);
+
 		} else if(!strcmp(command, "get")) {
-			fprintf(stderr, "GETTING\n");
-			do_get_command(db, key);
+			ret = do_get_command(db, key, telnet_print_doc);
 		} else if(!strcmp(command, "iterate")) {
-			fprintf(stderr, "ITERATING\n");
 			fdb_seqnum_t start = 0;
 			string_to_seqnum(key, &start);
-			do_iterate_command(db, start);
+			ret = do_iterate_command(db, start, telnet_print_key_doc);
 		} else {
 			//fprintf(stderr, "fail: unknown command\n");
 			fprintf(stdout, "fail: unknown command\n");

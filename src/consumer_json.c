@@ -9,13 +9,21 @@
 #include "consumer.h"
 #include "json_utils.h"
 
+static void json_print_cb(fdb_doc *doc);
+
+static void json_print_cb(fdb_doc *doc) {
+	char *result = doc_to_string(doc);
+	fprintf(stdout, "%s\n", result);
+	free(result);
+}
+
 void call_json_get(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
 	const char *required_keys[] = {"command", "key", 0};
 	ensure_json_keys(json_errors, json, required_keys, NULL);
 	json_t *value = get_json_string_required(json_errors, json, "key");
 
 	if(!json_errors_p(json_errors))
-		do_get_command(db, json_string_value(value));
+		do_get_command(db, json_string_value(value), json_print_cb);
 }
 
 void call_json_iterate(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
@@ -28,7 +36,7 @@ void call_json_iterate(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
 	int start = value ? json_integer_value(value) : 0;
 
 	if(!json_errors_p(json_errors))
-		do_iterate_command(db, start);
+		do_iterate_command(db, start, json_print_cb);
 }
 
 void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json) {

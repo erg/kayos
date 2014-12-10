@@ -11,11 +11,11 @@
 #include "buffer.h"
 #include "errors.h"
 
-void do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
 
-    fdb_status status;
+    fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
 		status = fdb_set_kv(db, key, key_length, value, value_length);
@@ -28,12 +28,13 @@ void do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 		if(status != FDB_RESULT_SUCCESS)
 			fatal_error("fdb_commit");
 	}
+	return status;
 }
 
-void do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+fdb_status do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	void *key, size_t key_length) {
 
-    fdb_status status;
+    fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
 		status = fdb_del_kv(db, key, key_length);
@@ -44,6 +45,7 @@ void do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 		if(status != FDB_RESULT_SUCCESS)
 			fatal_error("fdb_commit");
 	}
+	return status;
 }
 
 
@@ -52,12 +54,19 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
 
+	fdb_status ret = 0 ;
+
 	if(command) {
-		if(!strcmp(command, "set"))
-			do_set_command(dbfile, db, key, key_length, value, value_length);
-		else if(!strcmp(command, "delete"))
-			do_delete_command(dbfile, db, key, key_length);
-		else
+		if(!strcmp(command, "set")) {
+			ret = do_set_command(dbfile, db, key, key_length, value, value_length);
+			command_ok(ret);
+		}
+		else if(!strcmp(command, "delete")) {
+			ret = do_delete_command(dbfile, db, key, key_length);
+			command_ok(ret);
+		} else {
 			fprintf(stderr, "unknown command: %s\n", command);
+		}
+		fflush(stdout);
 	}
 }
