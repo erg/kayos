@@ -25,7 +25,9 @@ To build kayos:
 * ``make DEBUG=1``
 
 To run:
-* ``./bin/kayos-server``
+* ``./bin/kayos-server dbname``
+* ``./bin/kayos-producer dbname``
+* ``./bin/kayos-consumer dbname``
 
 Producer port:
 * ``telnet 9890``
