@@ -45,12 +45,14 @@ void call_producer_json(fdb_file_handle *dbfile,
 	const char *command = json_string_value(
 		get_json_string_required(json_errors, json, "command"));
 
-	if(!strcmp(command, "set"))
-		call_json_set(dbfile, db, json_errors, json);
-	else if(!strcmp(command, "delete"))
-		call_json_delete(dbfile, db, json_errors, json);
-	else
-		add_custom_json_error(json_errors, "key", "command", "error", "NOT_A_PRODUCER_COMMAND");
+	if(command) {
+		if(!strcmp(command, "set"))
+			call_json_set(dbfile, db, json_errors, json);
+		else if(!strcmp(command, "delete"))
+			call_json_delete(dbfile, db, json_errors, json);
+		else
+			add_custom_json_error(json_errors, "key", "command", "error", "NOT_A_PRODUCER_COMMAND");
+	}
 
 	if(json_errors_p(json_errors))
 		print_json_object(stdout, json_errors);

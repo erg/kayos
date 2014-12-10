@@ -37,12 +37,14 @@ void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *jso
 	const char *command = json_string_value(
 		get_json_string_required(json_errors, json, "command"));
 
-	if(!strcmp(command, "get"))
-		call_json_get(db, json_errors, json);
-	else if(!strcmp(command, "iterate"))
-		call_json_iterate(db, json_errors, json);
-	else
-		add_custom_json_error(json_errors, "key", "command", "error", "NOT_A_CONSUMER_COMMAND");
+	if(command) {
+		if(!strcmp(command, "get"))
+			call_json_get(db, json_errors, json);
+		else if(!strcmp(command, "iterate"))
+			call_json_iterate(db, json_errors, json);
+		else
+			add_custom_json_error(json_errors, "key", "command", "error", "NOT_A_CONSUMER_COMMAND");
+	}
 
 	if(json_errors_p(json_errors))
 		print_json_object(stdout, json_errors);
