@@ -45,10 +45,13 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 	}
 
 	while(1) {
-		status = fdb_iterator_next(iterator, &doc);
+		fdb_iterator_get(iterator, &doc);
 		if (status == FDB_RESULT_ITERATOR_FAIL) break;
+
 		print_cb(doc);
 		fdb_doc_free(doc);
+		status = fdb_iterator_next(iterator);
+		if (status == FDB_RESULT_ITERATOR_FAIL) break;
 	}
 
 	fflush(stdout);
