@@ -3,40 +3,131 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <http_parser.h>
+
 #include "both.h"
 #include "buffer.h"
 #include "consumer.h"
 #include "hexdump.h"
 
+int cb_count = 0;
+
+// http_cb
+
+int on_message_begin_cb(http_parser *p) {
+	fprintf(stderr, "message_begin_cb called\n");
+	//fprintf(stderr, "  method: %d, status_code: %d\n", p->method, p->status_code);
+
+	fflush(stderr);
+	cb_count++;
+	return 0;
+}
+
+int on_headers_complete_cb(http_parser *p) {
+	fprintf(stderr, "on_headers_complete_cb called\n");
+	fprintf(stderr, "  method: %d, status_code: %d\n", p->method, p->status_code);
+	fflush(stderr);
+	cb_count++;
+	return 0;
+}
+
+int on_message_complete_cb(http_parser *p) {
+	fprintf(stderr, "on_message_complete_cb called\n");
+	fprintf(stderr, "  method: %d, status_code: %d\n", p->method, p->status_code);
+	fflush(stderr);
+	cb_count++;
+	return 0;
+}
+
+
+int on_header_field_cb(http_parser *p, const char *at, size_t length) {
+	fprintf(stderr, "on_header_field_cb called\n");
+	fprintf(stderr, "  ");
+	fwrite(at, 1, length, stderr);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	cb_count++;
+	return 0;
+}
+
+int on_header_value_cb(http_parser *p, const char *at, size_t length) {
+	fprintf(stderr, "on_header_value_cb called\n");
+	fprintf(stderr, "  ");
+	fwrite(at, 1, length, stderr);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	cb_count++;
+	return 0;
+}
+
+int on_url_cb(http_parser *p, const char *at, size_t length) {
+	fprintf(stderr, "on_url_cb called\n");
+	fprintf(stderr, "  ");
+	fwrite(at, 1, length, stderr);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	cb_count++;
+	return 0;
+}
+
+int on_status_cb(http_parser *p, const char *at, size_t length) {
+	fprintf(stderr, "on_status_cb called\n");
+	fprintf(stderr, "  ");
+	fwrite(at, 1, length, stderr);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	cb_count++;
+	return 0;
+}
+
+int on_body_cb(http_parser *p, const char *at, size_t length) {
+	fprintf(stderr, "on_body_cb called\n");
+	fprintf(stderr, "  ");
+	fwrite(at, 1, length, stderr);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+
+	cb_count++;
+	return 0;
+}
+
+// https://github.com/bodokaiser/libuv-webserver/blob/master/src/webserver.c
 size_t handle_producer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	forestdb_handler_t handler,
 	char *ptr, size_t len) {
 
-	// char *end = ptr + len;
-	// fprintf(stderr, "http command: %s\n", command);
-	// named_hexdump(stderr, "handle_http", ptr, len);
+	named_hexdump(stderr, "handle_consumer_http", ptr, len);
+	http_parser parser;
+	http_parser_init(&parser, HTTP_REQUEST);
 
-	// ptr = buffer_skip_whitespace(ptr, end - ptr);
-	// char *url = strsep(&ptr, " \t\r\n");
-	// ptr = buffer_skip_whitespace(ptr, end - ptr);
-	// char *version = strsep(&ptr, " \t\r\n");
-	// ptr = buffer_skip_whitespace(ptr, end - ptr);
-	// char *headers = strsep(&ptr, " \t\r\n");
-	// fprintf(stderr, "url: %s\n", url);
-	// fprintf(stderr, "version: %s\n", version);
-	// fprintf(stderr, "headers: %s\n", headers);
+	size_t nread;
+	http_parser_settings settings;
 
- //    if(!strncmp(command, "GET", 3)) {
-	// }
- //    else if(!strncmp(command, "PUT", 3)) {
-	// }
- //    else if(!strncmp(command, "POST", 4)) {
-	// }
- //    else if (!strncmp(command, "DELETE", 6)) {
-	// }
-	// else {
-	// 	fprintf(stderr, "unknown http command: %s\n", command);
-	// }
+	settings.on_message_begin = on_message_begin_cb;
+	settings.on_header_field = on_header_field_cb;
+	settings.on_header_value = on_header_value_cb;
+	settings.on_url = on_url_cb;
+	settings.on_status = on_status_cb;
+	settings.on_body = on_body_cb;
+	settings.on_headers_complete = on_headers_complete_cb;
+	settings.on_message_complete = on_message_complete_cb;
 
-	return -1;
+	nread = http_parser_execute(&parser, &settings, ptr, len);
+	fprintf(stderr, "0: http_parser_execute nread: %zu\n", nread);
+	fprintf(stderr, "count: %d\n", cb_count);
+
+	if(parser.upgrade) {
+		// do something cool here for web sockets
+	} else {
+
+		if(nread != len) {
+			return -1;
+		}
+	}
+
+	return nread;
 }
