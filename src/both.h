@@ -15,7 +15,6 @@ typedef void forestdb_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 
 typedef size_t http_handler_t(fdb_file_handle *dbfile,fdb_kvs_handle *db,
 	forestdb_handler_t handler,
-	char *command,
 	char *ptr, size_t len);
 
 typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json);

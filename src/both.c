@@ -253,6 +253,16 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	char *end = line + len;
 	char *eol = line;
 
+	// HTTP commands are uppercase
+	// send entire line
+	if(len > 0 && isupper(line[0])) {
+		return http_handler(dbfile, db, handler, line, end - line);
+	}
+
+
+
+
+
 	// look for entire line, if no entire line, process it next time around
 	size_t first_eol = strcspn(ptr, "\r\n");
 #ifdef DEBUG
@@ -269,11 +279,6 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 
 	ptr = buffer_skip_whitespace(ptr, end - ptr);
 	command = strsep(&ptr, " \t\r\n");
-
-	// HTTP commands are uppercase
-	if(isupper(command[0])) {
-		return http_handler(dbfile, db, handler, command, ptr, end - ptr);
-	}
 
 	ptr = buffer_skip_whitespace(ptr, end - ptr);
 	key = strsep(&ptr, " \t\r\n");

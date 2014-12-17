@@ -77,7 +77,6 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	if(command) {
 		if(!strcmp(command, "topic")) {
 			ret = do_topic_command(db, key);
-
 		} else if(!strcmp(command, "get")) {
 			ret = do_get_command(db, key, telnet_print_doc);
 		} else if(!strcmp(command, "iterate")) {
