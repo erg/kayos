@@ -21,7 +21,10 @@ void ensure_kayos_data_path() {
 	int ret;
 	char *path = get_kayos_data_path();
 	ret = mkpath(path, 0777);
-	if(ret == -1) libc_fatal_error("mkdir failed");
+	if(ret == -1) {
+		fprintf(stderr, "cannot make path: %s\n", path);
+		libc_fatal_error("mkdir failed");
+	}
 	free(path);
 }
 
