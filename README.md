@@ -9,16 +9,25 @@ Added support for HTTP iterate.
 Cloning:
 * ``git clone --recursive git@github.com:erg/kayos.git``
 
-To update dependencies:
+To update submodule dependencies:
+* ``git submodule update --init``
 * ``git submodule update --remote forestdb``
 * ``git submodule update --remote jansson``
 * ``git submodule foreach git pull``
 
-Build forestdb:
-* ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
+Build dependencies:
+* ``cmake``
+* ``snappy``
+* ``sudo apt-get install cmake libsnappy-dev``
 
-Build jansson:
-* ``mkdir -p jansson/build && cd jansson/build && cmake .. && make -j && make install && cd ../../``
+Build forestdb (Mac then Ubuntu):
+* ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
+* ``sudo echo "hi" && mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && sudo make install && cd ../../``
+
+
+Build jansson (Mac then Ubuntu):
+* ``mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && make install && cd ../../``
+* ``sudo echo "hi" && mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && sudo make install && cd ../../``
 
 To build kayos:
 * ``make``
