@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 void hexdump(FILE *stream, const char *buf, const uint64_t len);
 

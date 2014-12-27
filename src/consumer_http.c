@@ -10,11 +10,13 @@
 #include "consumer.h"
 #include "hexdump.h"
 
-static int consumer_cb(http_parser*, const char *at, size_t length);
+//static int consumer_cb(http_parser*, const char *at, size_t length);
 
+/*
 int consumer_cb(http_parser* parser, const char *at, size_t length) {
 	return 0;
 }
+*/
 
 size_t handle_consumer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	forestdb_handler_t handler,

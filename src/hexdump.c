@@ -16,7 +16,7 @@ void hexdump(FILE *stream, const char *buf, const uint64_t len) {
 	for (i = 0; i < len; i++) {
 		mod = i % 16;
 		if(mod == 0)
-			fprintf(stream, "%08llx: ", i);
+			fprintf(stream, "%08lx: ", i);
 		else if(mod == 8)
 			fprintf(stream, "-");
 		else
@@ -43,6 +43,6 @@ void hexdump(FILE *stream, const char *buf, const uint64_t len) {
 void named_hexdump(FILE *stream, const char *title,
 	const char *buf, const uint64_t len) {
 
-	fprintf(stream, "Hexdump: %s, %lld bytes\n", title, len);
+	fprintf(stream, "Hexdump: %s, %lu bytes\n", title, len);
 	hexdump(stream, buf, len);
 }

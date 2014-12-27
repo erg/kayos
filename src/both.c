@@ -71,7 +71,7 @@ fdb_status do_topic_command(fdb_kvs_handle *db,
 	const char *dbname) {
 	// open topic or lookup, switch current topic
 
-	fdb_status status = FDB_RESULT_INVALID_ARGS;
+	//fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	unimplemented("do_topic_command()");
 	return FDB_RESULT_INVALID_ARGS;

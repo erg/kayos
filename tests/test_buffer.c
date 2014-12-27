@@ -90,7 +90,7 @@ int test_buffer_token() {
 	char alphabet[] = "  ab  cd  e  ";
 	char *next = alphabet;
 	char *end = alphabet + strlen(alphabet);
-	int len = strlen(alphabet);
+	//int len = strlen(alphabet);
 
 	ptr = buffer_token(alphabet, end - alphabet, &next);
 	if(next - alphabet != 5) sum++;
