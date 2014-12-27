@@ -2,7 +2,8 @@ VERSION = 0.0.1
 LIBPATH =
 CC = clang
 CXX = clang++
-CFLAGS = -Wall -Wpedantic -g -std=c99
+# http://www.schweikhardt.net/identifiers.html
+CFLAGS = -Wall -Wpedantic -Werror -g -std=gnu99
 LIBS = -lboost_filesystem -lboost_system -lsnappy
 INCLUDE_LIB_PATHS = -L /usr/local/lib
 SERVER_LIBS =
@@ -79,7 +80,7 @@ CONSUMER_OBJS = $(DLL_OBJS) \
 TEST_BUFFER_OBJS = $(DLL_OBJS) \
 	tests/test_buffer.o
 
-TESTER_OBJS = $(DLL_OBJS) \
+#TESTER_OBJS = $(DLL_OBJS) \
 	tester/tester.o \
 	src/json_utils.o \
 	tester/tester_main.o
@@ -103,8 +104,8 @@ kayos-consumer: $(CONSUMER_OBJS)
 test-buffer: $(TEST_BUFFER_OBJS)
 	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/test-buffer $(CFLAGS) $(TEST_INCLUDE_PATHS) $(INCLUDE_LIB_PATHS) $(TEST_BUFFER_LIBS) $(TEST_BUFFER_OBJS)
 
-tester: $(TESTER_OBJS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/tester $(CFLAGS) $(TESTER_INCLUDE_PATHS) $(INCLUDE_LIB_PATHS) $(TESTER_LIBS) $(TESTER_OBJS)
+#tester: $(TESTER_OBJS)
+	#$(TOOLCHAIN_PREFIX)$(CC) -o $(BINDIR_TESTS)/tester $(CFLAGS) $(TESTER_INCLUDE_PATHS) $(INCLUDE_LIB_PATHS) $(TESTER_LIBS) $(TESTER_OBJS)
 
 %.o: %.c
 	$(TOOLCHAIN_PREFIX)$(CC) $(CFLAGS) $(INCLUDE_PATHS) -c -o $@ $<
