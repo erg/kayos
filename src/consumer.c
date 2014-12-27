@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <forestdb.h>
 #include <jansson.h>
@@ -38,7 +39,7 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 	fdb_doc *doc;
 
 	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
-	fprintf(stderr, "fdb_iterator_sequence_init status: %d, start: %lu\n", status, start);
+	fprintf(stderr, "fdb_iterator_sequence_init status: %d, start: %" PRIu64 "\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
 		fprintf(stderr, "fdb_iterator_sequence_init failed");
 		return status;
@@ -60,11 +61,11 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 }
 
 static void telnet_print_doc(fdb_doc *doc) {
-	fprintf(stdout, "%lu, %s\n", doc->seqnum, doc->body);
+	fprintf(stdout, "%" PRIu64 ", %s\n", doc->seqnum, doc->body);
 }
 
 static void telnet_print_key_doc(fdb_doc *doc) {
-	fprintf(stdout, "%lu, %s, %s\n", doc->seqnum, doc->key, doc->body);
+	fprintf(stdout, "%" PRIu64 ", %s, %s\n", doc->seqnum, doc->key, doc->body);
 }
 
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
