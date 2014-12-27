@@ -3,11 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
-void hexdump(FILE *stream, const char *buf, const uint64_t len);
+void hexdump(FILE *stream, const char *buf, const size_t len);
 
 void named_hexdump(FILE *stream, const char *title,
-	const char *buf, const uint64_t len);
+	const char *buf, const size_t len);
 
 #endif
