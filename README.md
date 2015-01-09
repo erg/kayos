@@ -32,6 +32,9 @@ Build jansson (Mac then Ubuntu):
 To build kayos:
 * ``make``
 * ``make DEBUG=1``
+* Windows 32: ``cmake -G"Visual Studio 12" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+* Windows 64: ``cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+
 
 To run:
 * ``./bin/kayos-server dbname``
