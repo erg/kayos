@@ -12,8 +12,6 @@ Keep All Your Objects Safe
 
 ## To build kayos:
 * Unix: ``mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
-* Windows 32: ``mkdir build && cd build && cmake -G"Visual Studio 12" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
-* Windows 64: ``mkdir build && cd build && cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
 
 ## To run:
 * ``./kayos-server dbname``
@@ -44,7 +42,6 @@ Keep All Your Objects Safe
 ## HTTP commands:
 * `curl -X GET http://127.0.0.1:9891/_iterate`
 
-
 ## Troubleshooting:
 * `./kayos-consumer: error while loading shared libraries: libforestdb.so: cannot open shared object file: No such file or directory`
 Run `ldconfig` as root to udpate the library cache.
@@ -70,3 +67,7 @@ Fix the permissions for `/usr/local` so that it is writable by your user.
 ### cmake cheat sheet (jansson):
 * ``mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && make install && cd ../../``
 * ``sudo echo "hi" && mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && sudo make install && cd ../../``
+
+### windows cmake cheat sheet:
+* Windows 32: ``mkdir build && cd build && cmake -G"Visual Studio 12" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+* Windows 64: ``mkdir build && cd build && cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
