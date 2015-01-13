@@ -90,6 +90,7 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 			//fprintf(stderr, "fail: unknown command\n");
 			fprintf(stdout, "fail: unknown command\n");
 		}
+		fflush(stdout);
 	}
 }
 

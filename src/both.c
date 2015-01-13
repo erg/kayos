@@ -259,10 +259,6 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 		return http_handler(dbfile, db, handler, line, end - line);
 	}
 
-
-
-
-
 	// look for entire line, if no entire line, process it next time around
 	size_t first_eol = strcspn(ptr, "\r\n");
 #ifdef DEBUG
