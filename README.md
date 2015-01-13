@@ -3,38 +3,18 @@ kayos
 
 Keep All Your Objects Safe
 
-The project now uses submodules for forestdb and jansson.
-Added support for HTTP iterate.
-
 Cloning:
 * ``git clone --recursive git@github.com:erg/kayos.git``
-
-To update submodule dependencies:
-* ``git submodule update --init``
-* ``git submodule update --remote forestdb``
-* ``git submodule update --remote jansson``
-* ``git submodule foreach git pull``
 
 Build dependencies:
 * ``cmake``
 * ``snappy``
 * ``sudo apt-get install cmake libsnappy-dev``
 
-Build forestdb (Mac then Ubuntu):
-* ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
-* ``sudo echo "hi" && mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && sudo make install && cd ../../``
-
-
-Build jansson (Mac then Ubuntu):
-* ``mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && make install && cd ../../``
-* ``sudo echo "hi" && mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && sudo make install && cd ../../``
-
 To build kayos:
-* ``make``
-* ``make DEBUG=1``
-* Windows 32: ``cmake -G"Visual Studio 12" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
-* Windows 64: ``cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
-
+* Unix: ``mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+* Windows 32: ``mkdir build && cd build && cmake -G"Visual Studio 12" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+* Windows 64: ``mkdir build && cd build && cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
 
 To run:
 * ``./bin/kayos-server dbname``
@@ -77,4 +57,17 @@ errno = 13, strerrno: Permission denied```
 Fix the permissions for ``/usr/local`` so that it is writable by your user.
 
 
+git submodule cheat sheet:
+* ``git submodule update --init``
+* ``git submodule update --remote forestdb``
+* ``git submodule update --remote jansson``
+* ``git submodule update --remote http-parser``
+* ``git submodule foreach git pull``
 
+cmake cheat sheet (forestdb):
+* ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
+* ``sudo echo "hi" && mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && sudo make install && cd ../../``
+
+cmake cheat sheet (jansson):
+* ``mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && make install && cd ../../``
+* ``sudo echo "hi" && mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && sudo make install && cd ../../``
