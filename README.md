@@ -24,44 +24,44 @@ Keep All Your Objects Safe
 * ``telnet localhost 9890``
 
 ## Producer commands:
-* set key val
-* delete key
-* {"command": "set", "key": "a", "value": "1"}
-* [{"command": "set", "key": "a", "value": "1"},{"command": "set", "key": "b", "value": "2"}]
+* `set key val`
+* `delete key`
+* `{"command": "set", "key": "a", "value": "1"}`
+* `[{"command": "set", "key": "a", "value": "1"},{"command": "set", "key": "b", "value": "2"}]`
 
 
 ## Consumer port:
-* ``telnet localhost 9891``
+* `telnet localhost 9891`
 
 ## Consumer commands:
-* get key
-* iterate
-* iterate 100 -- seqnum >= 100
-* {"command": "iterate"}
-* {"command": "iterate", "start": "100"}
-* {"command": "get", "key": "a"}
+* `get key`
+* `iterate`
+* `iterate 100 -- seqnum >= 100`
+* `{"command": "iterate"}`
+* `{"command": "iterate", "start": "100"}`
+* `{"command": "get", "key": "a"}`
 
 ## HTTP commands:
-* ``curl -X GET http://127.0.0.1:9891/_iterate``
+* `curl -X GET http://127.0.0.1:9891/_iterate`
 
 
 ## Troubleshooting:
-* ``./bin/kayos-consumer: error while loading shared libraries: libforestdb.so: cannot open shared object file: No such file or directory``
-Run ``ldconfig`` as root to udpate the library cache.
+* `./bin/kayos-consumer: error while loading shared libraries: libforestdb.so: cannot open shared object file: No such file or directory`
+Run `ldconfig` as root to udpate the library cache.
 
 * ```erg@ubuntu64:~/kayos$ ./bin/kayos-consumer asdf
 cannot make path: /usr/local/var/lib/kayos
 libc fatal_error: mkdir failed
 errno = 13, strerrno: Permission denied```
-Fix the permissions for ``/usr/local`` so that it is writable by your user.
+Fix the permissions for `/usr/local` so that it is writable by your user.
 
 
 ### git submodule cheat sheet:
-* ``git submodule update --init``
-* ``git submodule update --remote forestdb``
-* ``git submodule update --remote jansson``
-* ``git submodule update --remote http-parser``
-* ``git submodule foreach git pull``
+* `git submodule update --init`
+* `git submodule update --remote forestdb`
+* `git submodule update --remote jansson`
+* `git submodule update --remote http-parser`
+* `git submodule foreach git pull origin master`
 
 ### cmake cheat sheet (forestdb):
 * ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
