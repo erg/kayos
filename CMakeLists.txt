@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(kayos)
 
-set(CMAKE_C_FLAGS "-std=gnu99")
+set(CMAKE_C_FLAGS "-std=gnu99 -Wall -Wextra")
 set(kayos_VERSION_MAJOR 0)
 set(kayos_VERSION_MINOR 1)
 
