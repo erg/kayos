@@ -131,12 +131,12 @@ int main(int argc, char *argv[]) {
 		if(FD_ISSET(producers_fd, &readfds)) {
 			fprintf(stderr, "producer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(producers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-producer", dbname);
+			fork_socket_handler(client_fd, client_fd, "./kayos-producer", dbname);
 		}
 		if(FD_ISSET(consumers_fd, &readfds)) {
 			fprintf(stderr, "consumer client connected! select ret: %d\n", ret);
 			client_fd = accept_client(consumers_fd, &their_addr, &addr_size);
-			fork_socket_handler(client_fd, client_fd, "bin/kayos-consumer", dbname);
+			fork_socket_handler(client_fd, client_fd, "./kayos-consumer", dbname);
 		}
 	} while(1);
 
