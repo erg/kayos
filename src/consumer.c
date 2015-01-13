@@ -61,11 +61,13 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 }
 
 static void telnet_print_doc(fdb_doc *doc) {
-	fprintf(stdout, "%" PRIu64 ", %s\n", doc->seqnum, doc->body);
+	fprintf(stdout, "%" PRIu64 ", %.*s\n",
+		doc->seqnum, (int)doc->bodylen, (char*)doc->body);
 }
 
 static void telnet_print_key_doc(fdb_doc *doc) {
-	fprintf(stdout, "%" PRIu64 ", %s, %s\n", doc->seqnum, doc->key, doc->body);
+	fprintf(stdout, "%" PRIu64 ", %.*s, %.*s\n",
+		doc->seqnum, (int)doc->keylen, (char*)doc->key, (int)doc->bodylen, (char*)doc->body);
 }
 
 void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
