@@ -46,10 +46,10 @@ Keep All Your Objects Safe
 
 
 ## Troubleshooting:
-* `./bin/kayos-consumer: error while loading shared libraries: libforestdb.so: cannot open shared object file: No such file or directory`
+* `./kayos-consumer: error while loading shared libraries: libforestdb.so: cannot open shared object file: No such file or directory`
 Run `ldconfig` as root to udpate the library cache.
 
-* ```erg@ubuntu64:~/kayos$ ./bin/kayos-consumer asdf
+* ```erg@ubuntu64:~/kayos/build$ ./kayos-consumer asdf
 cannot make path: /usr/local/var/lib/kayos
 libc fatal_error: mkdir failed
 errno = 13, strerrno: Permission denied```
