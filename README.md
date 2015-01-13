@@ -17,12 +17,12 @@ To build kayos:
 * Windows 64: ``mkdir build && cd build && cmake -G"Visual Studio 12 Win64" -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
 
 To run:
-* ``./bin/kayos-server dbname``
-* ``./bin/kayos-producer dbname``
-* ``./bin/kayos-consumer dbname``
+* ``./kayos-server dbname``
+* ``./kayos-producer dbname``
+* ``./kayos-consumer dbname``
 
 Producer port:
-* ``telnet 9890``
+* ``telnet localhost 9890``
 
 Producer commands:
 * set key val
@@ -32,7 +32,7 @@ Producer commands:
 
 
 Consumer port:
-* ``telnet 9891``
+* ``telnet localhost 9891``
 
 Consumer commands:
 * get key
