@@ -11,6 +11,9 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/forestdb/include/libforestdb)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/jansson/src)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/http-parser)
 
+
+find_package(PythonLibs)
+
 #message("CMAKE_INCLUDE_PATH: ${CMAKE_INCLUDE_PATH}")
 
 add_subdirectory(forestdb)
@@ -62,3 +65,4 @@ add_executable(kayos-server
   src/kayos_server_main.c
 )
 target_link_libraries(kayos-server forestdb jansson)
+
