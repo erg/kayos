@@ -8,9 +8,8 @@ set(kayos_VERSION_MINOR 1)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/src)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/forestdb/include/libforestdb)
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/jansson/src)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/http-parser)
-
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/jansson/include)
 
 find_package(PythonLibs)
 
