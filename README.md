@@ -11,7 +11,7 @@ Keep All Your Objects Safe
 * ``sudo apt-get install cmake libsnappy-dev``
 
 ## To build kayos:
-* Unix: ``mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .``
+* Unix: ``mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -- -j9``
 
 ## To run:
 * ``./kayos-server dbname``
