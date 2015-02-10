@@ -63,6 +63,7 @@ Fix the permissions for `/usr/local` so that it is writable by your user.
 ### cmake cheat sheet (forestdb):
 * ``mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && make install && cd ../../``
 * ``sudo echo "hi" && mkdir -p forestdb/build && cd forestdb/build && cmake .. && make -j && sudo make install && cd ../../``
+* Linux: ``cmake --build . -- -j8``
 
 ### cmake cheat sheet (jansson):
 * ``mkdir -p jansson/build && cd jansson/build && cmake -DJANSSON_BUILD_SHARED_LIBS=1 .. && make -j && make install && cd ../../``
