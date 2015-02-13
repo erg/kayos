@@ -23,6 +23,14 @@ int client_usage(int argc, char *argv[]) {
     return 0;
 }
 
+void key_expected(const char *command) {
+    fprintf(stdout, "key expected for command ``%s``\n", command);
+}
+
+void value_expected(const char *command) {
+    fprintf(stdout, "value expected for command ``%s``\n", command);
+}
+
 fdb_file_handle *init_fdb_file_handle(const char *dbname) {
     if(!kayos_dbname_valid_p(dbname))
         fatal_error("invalid dbname");
@@ -61,6 +69,21 @@ char *doc_to_string(fdb_doc *doc) {
 	if(!result) fatal_error("json_dumps() failed");
 	json_decref(dict);
 	return result;
+}
+
+int string_to_seqnum(char *str, fdb_seqnum_t *in_out) {
+	int success = 0;
+	if(str) {
+		char *end;
+		unsigned long long value = strtoull(str, &end, 10);
+		if (end == str || *end != '\0' || errno == ERANGE) {
+			return 0;
+		} else {
+			success = 1;
+			*in_out = value;
+		}
+	}
+	return success;
 }
 
 void parse_key_value(const char *line, char **key, char **value) {

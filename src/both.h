@@ -22,6 +22,9 @@ typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t 
 typedef void fdb_doc_print_t(fdb_doc *doc);
 
 int client_usage(int argc, char *argv[]);
+void key_expected(const char *command);
+void value_expected(const char *command);
+
 fdb_file_handle *init_fdb_file_handle(const char *path);
 fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile);
 

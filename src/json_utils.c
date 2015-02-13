@@ -196,19 +196,3 @@ json_t *get_json_integer_optional(json_t *json_errors, json_t *json, const char 
 		return value;
 	}
 }
-
-int string_to_seqnum(char *str, fdb_seqnum_t *in_out) {
-	int success = 0;
-	if(str) {
-		char *end;
-		unsigned long long value = strtoull(str, &end, 10); 
-		if (end == str || *end != '\0' || errno == ERANGE) {
-			return 0;
-		} else {
-			success = 1;
-			*in_out = value;
-		}
-	}
-	return success;
-}
-

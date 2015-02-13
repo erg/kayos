@@ -58,12 +58,22 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 
 	if(command) {
 		if(!strcmp(command, "set")) {
-			ret = do_set_command(dbfile, db, key, key_length, value, value_length);
-			command_ok(ret);
+            if(!key) {
+                key_expected(command);
+            } else if(!value) {
+                value_expected(command);
+            } else {
+			    ret = do_set_command(dbfile, db, key, key_length, value, value_length);
+			    command_ok(ret);
+            }
 		}
 		else if(!strcmp(command, "delete")) {
-			ret = do_delete_command(dbfile, db, key, key_length);
-			command_ok(ret);
+            if(!key) {
+                key_expected(command);
+            } else {
+			    ret = do_delete_command(dbfile, db, key, key_length);
+			    command_ok(ret);
+            }
 		} else {
 			fprintf(stderr, "unknown command: %s\n", command);
 		}
