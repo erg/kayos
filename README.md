@@ -12,6 +12,7 @@ Keep All Your Objects Safe
 
 ## To build kayos:
 * Unix: ``mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . -- -j9``
+* Unix debug: ``cmake -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . -- -j9``
 
 ## To run:
 * ``./kayos-server dbname``
