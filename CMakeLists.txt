@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(kayos)
 
-set(CMAKE_C_FLAGS_COMMON "-std=gnu99 -Wall -Wextra")
+#set(CMAKE_C_FLAGS_COMMON "-std=gnu99 -Wall -Wextra")
+set(CMAKE_C_FLAGS_COMMON "-std=gnu11 -Wall -Wextra")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_COMMON}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS_COMMON} -DKAYOS_DEBUG")
 set(kayos_VERSION_MAJOR 0)
