@@ -15,6 +15,7 @@
 #include "io.h"
 #include "json_utils.h"
 #include "paths.h"
+#include "debug.h"
 
 static char buffer[BUFFER_LENGTH];
 
@@ -49,13 +50,13 @@ fdb_file_handle *init_fdb_file_handle(const char *dbname) {
 
 fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile) {
     fdb_status status;
-    fdb_kvs_handle *db;
+    fdb_kvs_handle *kvs;
     fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
-    status = fdb_kvs_open_default(dbfile, &db, &kvs_config);
+    status = fdb_kvs_open_default(dbfile, &kvs, &kvs_config);
     if(status != FDB_RESULT_SUCCESS)
         fatal_error("fdb_kvs_open_default failed");
 
-    return db;
+    return kvs;
 }
 
 // Allocates, call free on return value
@@ -90,7 +91,7 @@ void parse_key_value(const char *line, char **key, char **value) {
 	unimplemented("parse_key_value()");
 }
 
-fdb_status do_topic_command(fdb_kvs_handle *db,
+fdb_status do_topic_command(fdb_kvs_handle *kvs,
 	const char *dbname) {
 	// open topic or lookup, switch current topic
 
@@ -115,24 +116,20 @@ void client_loop(const char *dbname,
 	size_t remaining = 0;
 
 	fdb_file_handle *dbfile = NULL;
-	fdb_kvs_handle *db = NULL;
+	fdb_kvs_handle *kvs = NULL;
 
 	do {
 
-#ifdef DEBUG
-		named_hexdump(stderr, "producer_client loop head", buffer, remaining);
-#endif
+		debug_hexdump("producer_client loop head", buffer, remaining);
 		ssize_t nbytes = safe_read(0, buffer + remaining, sizeof(buffer) - 1 - remaining);
 
 		dbfile = init_fdb_file_handle(dbname);
-		db = init_fdb_kvs_handle(dbfile);
+		kvs = init_fdb_kvs_handle(dbfile);
 
 		if(nbytes == 0) {
-#ifdef DEBUG
-			fprintf(stderr, "producer_client: client disconnected\n");
-#endif
-			fdb_kvs_close(db);
-			db = NULL;
+			debug_print("producer_client: client disconnected\n");
+			fdb_kvs_close(kvs);
+			kvs = NULL;
 			fdb_close(dbfile);
 			dbfile = NULL;
 			break;
@@ -140,38 +137,43 @@ void client_loop(const char *dbname,
 			libc_fatal_error("consumer_client: safe_read");
 		} else {
 			buffer[nbytes] = 0;
-#ifdef DEBUG
-			named_hexdump(stderr, "consumer_client got", buffer, nbytes);
-#endif
-			remaining = handle_buffer(dbfile, db, handler, handle_http, json_handler, buffer, nbytes);
+			debug_hexdump("consumer_client got", buffer, nbytes);
+			remaining = handle_buffer(dbfile, kvs, handler, handle_http, json_handler, buffer, nbytes);
 		}
 
 		// Used for closing HTTP commands.
 		// We returned -1, so we should disconnect the client.
 		if(remaining == -1) {
-			fdb_kvs_close(db);
-			db = NULL;
+            fprintf(stderr, "closing kvs0\n");
+			fdb_kvs_close(kvs);
+			kvs = NULL;
+            fprintf(stderr, "closing dbfile0\n");
 			fdb_close(dbfile);
 			dbfile = NULL;
 			break;
 		}
-		fdb_kvs_close(db);
-		db = NULL;
+        debug_print("closing kvs1\n");
+		fdb_kvs_close(kvs);
+		kvs = NULL;
+
+        debug_print("closing dbfile1\n");
 		fdb_close(dbfile);
 		dbfile = NULL;
 	} while(1);
 
-	fdb_kvs_close(db);
+    debug_print("closing kvs2\n");
+	fdb_kvs_close(kvs);
+    debug_print("closing dbfile2\n");
 	fdb_close(dbfile);
 
-#ifdef DEBUG
+#ifdef KAYOS_DEBUG
 	if(remaining > 0) {
-		named_hexdump(stderr, "consumer client dc, unprocessed commands", buffer, remaining);
+		debug_hexdump("consumer client dc, unprocessed commands", buffer, remaining);
 	}
 #endif
 }
 
-ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 		forestdb_handler_t handler,
 		http_handler_t handle_http,
 		json_handler_t json_handler,
@@ -182,10 +184,9 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	char *end = buffer + len;
 	size_t previous_remaining = remaining;
 	do {
-#ifdef DEBUG
-		fprintf(stderr, "******loop start\n");
-		named_hexdump(stderr, "handle_buffer", ptr, remaining);
-#endif
+		debug_print("******loop start\n");
+		debug_hexdump("handle_buffer", ptr, remaining);
+
 		previous_remaining = remaining;
 		ptr = buffer_skip_whitespace(ptr, end - ptr);
 
@@ -194,38 +195,30 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 		}
 
 		if(*ptr == '{' || *ptr == '[')
-			remaining = parse_json(dbfile, db, json_handler, ptr, end - ptr);
+			remaining = parse_json(dbfile, kvs, json_handler, ptr, end - ptr);
 		else if(*ptr <= 127)
-			remaining = parse_line(dbfile, db, handler, handle_http, ptr, end - ptr);
+			remaining = parse_line(dbfile, kvs, handler, handle_http, ptr, end - ptr);
 		else
-			remaining = parse_binary(dbfile, db, handler, ptr, end - ptr);
+			remaining = parse_binary(dbfile, kvs, handler, ptr, end - ptr);
 
 		ptr = end - remaining;
-#ifdef DEBUG
-		fprintf(stderr, "previous %zu, remaining: %zu\n", previous_remaining, remaining);
-#endif
+		debug_print("previous %zu, remaining: %zu\n", previous_remaining, remaining);
 	} while(remaining > 0 && (previous_remaining != remaining));
 
-#ifdef DEBUG
-	fprintf(stderr, "compacting, remaining: %zu!\n", remaining);
-	named_hexdump(stderr, "before compaction", buffer, len);
-#endif
+	debug_print("compacting, remaining: %zu!\n", remaining);
+	debug_hexdump("before compaction", buffer, len);
 
 	remaining = compact_buffer(buffer, len, ptr);
 
-#ifdef DEBUG
-	named_hexdump(stderr, "after compaction", buffer, remaining);
-#endif
+	debug_hexdump("after compaction", buffer, remaining);
 	return remaining;
 }
 
-ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	json_handler_t json_handler,
 	char *buffer, size_t len) {
 
-#ifdef DEBUG
-	named_hexdump(stderr, "parse_json", buffer, len);
-#endif
+	debug_hexdump("parse_json", buffer, len);
 
 	json_error_t error;
 	json_t *json;
@@ -245,17 +238,17 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 		size_t index;
 		json_t *json_elt;
 		json_array_foreach(json, index, json_elt) {
-			json_handler(dbfile, db, json_elt);
+			json_handler(dbfile, kvs, json_elt);
 		}
 	// {}
 	} else
-		json_handler(dbfile, db, json);
+		json_handler(dbfile, kvs, json);
 
 	json_decref(json);
 	return len - error.position;
 }
 
-size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	char *line, size_t len) {
 
@@ -263,14 +256,12 @@ size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	return 0;
 }
 
-ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	http_handler_t http_handler,
 	char *line, size_t len) {
 
-#ifdef DEBUG
-	fprintf(stderr, "parse_line called\n");
-#endif
+	debug_print("parse_line called\n");
 	char *ptr = line;
 	char *command = 0, *key = 0, *val = 0, *rest = 0;
 	char *end = line + len;
@@ -279,14 +270,12 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	// HTTP commands are uppercase
 	// send entire line
 	if(len > 0 && isupper(line[0])) {
-		return http_handler(dbfile, db, handler, line, end - line);
+		return http_handler(dbfile, kvs, handler, line, end - line);
 	}
 
 	// look for entire line, if no entire line, process it next time around
 	size_t first_eol = strcspn(ptr, "\r\n");
-#ifdef DEBUG
-	fprintf(stderr, "first_eol %zu\n", first_eol);
-#endif
+	debug_print("first_eol %zu\n", first_eol);
 	// found trailing NULL, no newline?
 	if(ptr + first_eol == end)
 		return first_eol;
@@ -307,12 +296,12 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	size_t val_length = val ? strlen(val) : 0;
 	ptr = buffer_skip_whitespace(ptr, end - ptr);
 	rest = ptr;
-#ifdef DEBUG
-	fprintf(stderr, "command: %s\n", command);
-	fprintf(stderr, "key: %s\n", key);
-	fprintf(stderr, "val: %s\n", val);
-	fprintf(stderr, "rest: %s\n\n", rest);
-#endif
-	handler(dbfile, db, command, key, key_length, val, val_length);
+
+	debug_print("command: %s\n", command);
+	debug_print("key: %s\n", key);
+	debug_print("val: %s\n", val);
+	debug_print("rest: %s\n\n", rest);
+
+	handler(dbfile, kvs, command, key, key_length, val, val_length);
 	return end - eol;
 }

@@ -43,6 +43,6 @@ void hexdump(FILE *stream, const char *buf, const size_t len) {
 void named_hexdump(FILE *stream, const char *title,
 	const char *buf, const size_t len) {
 
-	fprintf(stream, "Hexdump: %s, %lu bytes\n", title, len);
+	fprintf(stream, "Hexdump: %lu bytes\n%s\n", len, title);
 	hexdump(stream, buf, len);
 }

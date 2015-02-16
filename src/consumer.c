@@ -11,6 +11,8 @@
 
 #include "both.h"
 #include "buffer.h"
+#include "debug.h"
+#include "errors.h"
 #include "io.h"
 
 static void telnet_print_doc(fdb_doc *doc);
@@ -42,9 +44,9 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 	fdb_doc *doc;
 
 	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
-	fprintf(stderr, "fdb_iterator_sequence_init status: %d, start: %" PRIu64 "\n", status, start);
+	debug_print("fdb_iterator_sequence_init status: %d, start: %" PRIu64 "\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
-		fprintf(stderr, "fdb_iterator_sequence_init failed");
+		debug_print("fdb_iterator_sequence_init failed");
 		return status;
 	}
 
