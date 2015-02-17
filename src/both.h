@@ -8,16 +8,16 @@
 
 #define BUFFER_LENGTH 1024
 
-typedef void forestdb_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+typedef void forestdb_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	char *command,
 	void *key, size_t key_length,
 	void *value, size_t value_length);
 
-typedef size_t http_handler_t(fdb_file_handle *dbfile,fdb_kvs_handle *db,
+typedef size_t http_handler_t(fdb_file_handle *dbfile,fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	char *ptr, size_t len);
 
-typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json);
+typedef void json_handler_t(fdb_file_handle *dbfile, fdb_kvs_handle *kvs, json_t *json);
 
 typedef void fdb_doc_print_t(fdb_doc *doc);
 
@@ -36,7 +36,7 @@ char *doc_to_string(fdb_doc *doc);
 int string_to_seqnum(char *str, fdb_seqnum_t *in_out);
 
 // Commands
-fdb_status do_topic_command(fdb_kvs_handle *db, const char *dbname);
+fdb_status do_topic_command(fdb_kvs_handle *kvs, const char *dbname);
 
 void command_ok(fdb_status status);
 
@@ -49,23 +49,23 @@ void client_loop(const char *dbname,
 		json_handler_t json_handler);
 
 ssize_t parse_line(fdb_file_handle *dbfile,
-	fdb_kvs_handle *db,
+	fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	http_handler_t http_handler,
 	char *line, size_t len);
 
 size_t parse_binary(fdb_file_handle *dbfile,
-	fdb_kvs_handle *db,
+	fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	char *line, size_t len);
 
 ssize_t parse_json(fdb_file_handle *dbfile,
-	fdb_kvs_handle *db,
+	fdb_kvs_handle *kvs,
 	json_handler_t handler,
 	char *buffer, size_t len);
 
 ssize_t handle_buffer(fdb_file_handle *dbfile,
-	fdb_kvs_handle *db,
+	fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	http_handler_t handle_http,
 	json_handler_t json_handler,

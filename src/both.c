@@ -20,6 +20,7 @@
 static char buffer[BUFFER_LENGTH];
 
 int client_usage(int argc, char *argv[]) {
+    (void)argc;
     fprintf(stderr, "usage: %s dbpath\n", argv[0]);
     return 0;
 }
@@ -37,9 +38,9 @@ fdb_file_handle *init_fdb_file_handle(const char *dbname) {
         fatal_error("invalid dbname");
     fdb_status status;
     fdb_file_handle *dbfile;
-    fdb_config fconfig = fdb_get_default_config();
+    fdb_config db_config = fdb_get_default_config();
     char *path = get_kayos_data_path_for(dbname);
-    status = fdb_open(&dbfile, path, &fconfig);
+    status = fdb_open(&dbfile, path, &db_config);
     free(path);
 
     if(status != FDB_RESULT_SUCCESS)
@@ -113,7 +114,7 @@ void client_loop(const char *dbname,
 	http_handler_t handle_http,
 	json_handler_t json_handler) {
 
-	size_t remaining = 0;
+	ssize_t remaining = 0;
 
 	fdb_file_handle *dbfile = NULL;
 	fdb_kvs_handle *kvs = NULL;
@@ -182,7 +183,7 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	ssize_t remaining = len;
 	char *ptr = buffer;
 	char *end = buffer + len;
-	size_t previous_remaining = remaining;
+	ssize_t previous_remaining = remaining;
 	do {
 		debug_print("******loop start\n");
 		debug_hexdump("handle_buffer", ptr, remaining);

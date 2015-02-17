@@ -11,14 +11,14 @@
 #include "buffer.h"
 #include "errors.h"
 
-fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
 
     fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
-		status = fdb_set_kv(db, key, key_length, value, value_length);
+		status = fdb_set_kv(kvs, key, key_length, value, value_length);
 
 		if(status != FDB_RESULT_SUCCESS) {
 			fatal_error("fdb_set_kv");
@@ -31,13 +31,13 @@ fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 	return status;
 }
 
-fdb_status do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+fdb_status do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	void *key, size_t key_length) {
 
     fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
-		status = fdb_del_kv(db, key, key_length);
+		status = fdb_del_kv(kvs, key, key_length);
 		if(status != FDB_RESULT_SUCCESS)
 			fatal_error("fdb_del_kv");
 
@@ -49,7 +49,7 @@ fdb_status do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
 }
 
 
-void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	char *command,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
@@ -63,7 +63,7 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
             } else if(!value) {
                 value_expected(command);
             } else {
-			    ret = do_set_command(dbfile, db, key, key_length, value, value_length);
+			    ret = do_set_command(dbfile, kvs, key, key_length, value, value_length);
 			    command_ok(ret);
             }
 		}
@@ -71,7 +71,7 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *db,
             if(!key) {
                 key_expected(command);
             } else {
-			    ret = do_delete_command(dbfile, db, key, key_length);
+			    ret = do_delete_command(dbfile, kvs, key, key_length);
 			    command_ok(ret);
             }
 		} else {

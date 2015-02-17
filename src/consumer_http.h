@@ -5,7 +5,7 @@
 
 #include "both.h"
 
-size_t handle_consumer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+size_t handle_consumer_http(fdb_file_handle *db, fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	char *ptr, size_t len);
 

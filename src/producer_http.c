@@ -96,7 +96,7 @@ int on_body_cb(http_parser *p, const char *at, size_t length) {
 }
 
 // https://github.com/bodokaiser/libuv-webserver/blob/master/src/webserver.c
-size_t handle_producer_http(fdb_file_handle *dbfile, fdb_kvs_handle *db,
+size_t handle_producer_http(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	forestdb_handler_t handler,
 	char *ptr, size_t len) {
 

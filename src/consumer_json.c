@@ -17,16 +17,16 @@ static void json_print_cb(fdb_doc *doc) {
 	free(result);
 }
 
-void call_json_get(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
+void call_json_get(fdb_kvs_handle *kvs, json_t *json_errors, json_t *json) {
 	const char *required_keys[] = {"command", "key", 0};
 	ensure_json_keys(json_errors, json, required_keys, NULL);
 	json_t *value = get_json_string_required(json_errors, json, "key");
 
 	if(!json_errors_p(json_errors))
-		do_get_command(db, json_string_value(value), json_print_cb);
+		do_get_command(kvs, json_string_value(value), json_print_cb);
 }
 
-void call_json_iterate(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
+void call_json_iterate(fdb_kvs_handle *kvs, json_t *json_errors, json_t *json) {
 	const char *required_keys[] = {"command", 0};
 	const char *optional_keys[] = {"start", 0};
 
@@ -36,10 +36,10 @@ void call_json_iterate(fdb_kvs_handle *db, json_t *json_errors, json_t *json) {
 	int start = value ? json_integer_value(value) : 0;
 
 	if(!json_errors_p(json_errors))
-		do_iterate_command(db, start, json_print_cb);
+		do_iterate_command(kvs, start, json_print_cb);
 }
 
-void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *json) {
+void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *kvs, json_t *json) {
 
 	json_t *json_errors = new_json_errors();
 	const char *command = json_string_value(
@@ -47,9 +47,9 @@ void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *db, json_t *jso
 
 	if(command) {
 		if(!strcmp(command, "get"))
-			call_json_get(db, json_errors, json);
+			call_json_get(kvs, json_errors, json);
 		else if(!strcmp(command, "iterate"))
-			call_json_iterate(db, json_errors, json);
+			call_json_iterate(kvs, json_errors, json);
 		else
 			add_custom_json_error(json_errors, "key", "command", "error", "NOT_A_CONSUMER_COMMAND");
 	}
