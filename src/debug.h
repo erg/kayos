@@ -5,6 +5,10 @@
 #include <stdarg.h>
 #include "hexdump.h"
 
+#ifndef KAYOS_DEBUG
+#define KAYOS_DEBUG 0
+#endif
+
 //http://stackoverflow.com/questions/5588855/standard-alternative-to-gccs-va-args-trick
 //http://stackoverflow.com/questions/4054085/appending-to-va-args
 
