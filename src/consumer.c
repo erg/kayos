@@ -43,7 +43,7 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 	fdb_iterator *iterator;
 	fdb_doc *doc;
 
-	status = fdb_iterator_sequence_init(db, &iterator, start, -1, FDB_ITR_NONE);
+	status = fdb_iterator_sequence_init(db, &iterator, start, 0, FDB_ITR_NONE);
 	debug_print("fdb_iterator_sequence_init status: %d, start: %" PRIu64 "\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
 		debug_print("fdb_iterator_sequence_init failed");
@@ -52,8 +52,14 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 
 	while(1) {
 		fdb_iterator_get(iterator, &doc);
-		if (status == FDB_RESULT_ITERATOR_FAIL) break;
+		//if (status == FDB_RESULT_ITERATOR_FAIL) break;
+        if(status != FDB_RESULT_SUCCESS)
+            fatal_error("do_iterate_command() failed 0\n");
 
+        if(!doc) {
+            debug_print("iterator got no doc, stopping loop\n");
+            break;
+        }
 		print_cb(doc);
 		fdb_doc_free(doc);
 		status = fdb_iterator_next(iterator);
@@ -71,6 +77,9 @@ static void telnet_print_doc(fdb_doc *doc) {
 }
 
 static void telnet_print_key_doc(fdb_doc *doc) {
+	//debug_print("%" PRIu64 ", %d, %d\n",
+		//doc->seqnum, (int)doc->keylen, (int)doc->bodylen);
+
 	fprintf(stdout, "%" PRIu64 ", %.*s, %.*s\n",
 		doc->seqnum, (int)doc->keylen, (char*)doc->key, (int)doc->bodylen, (char*)doc->body);
 }
