@@ -46,12 +46,14 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
 	status = fdb_iterator_sequence_init(db, &iterator, start, 0, FDB_ITR_NONE);
 	debug_print("fdb_iterator_sequence_init status: %d, start: %" PRIu64 "\n", status, start);
 	if(status != FDB_RESULT_SUCCESS) {
-		debug_print("fdb_iterator_sequence_init failed");
+		debug_print("fdb_iterator_sequence_init failed\n");
 		return status;
 	}
 
 	while(1) {
 		fdb_iterator_get(iterator, &doc);
+        debug_print("fdb_iterator_got doc: %p\n", doc);
+
 		//if (status == FDB_RESULT_ITERATOR_FAIL) break;
         if(status != FDB_RESULT_SUCCESS)
             fatal_error("do_iterate_command() failed 0\n");
@@ -61,10 +63,11 @@ fdb_status do_iterate_command(fdb_kvs_handle *db, fdb_seqnum_t start, fdb_doc_pr
             break;
         }
 		print_cb(doc);
-		fdb_doc_free(doc);
 		status = fdb_iterator_next(iterator);
 		if (status == FDB_RESULT_ITERATOR_FAIL) break;
 	}
+    if(doc)
+        fdb_doc_free(doc);
 
 	fflush(stdout);
 	fdb_iterator_close(iterator);
