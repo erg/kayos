@@ -82,8 +82,8 @@ end:
 
 // pointer to buffer head, length of entire buffer, pointer to last processed char
 size_t compact_buffer(char *buffer, size_t len, char *ptr) {
-    size_t diff = ptr - buffer;
-    size_t filled = len - diff;
+	size_t diff = ptr - buffer;
+	size_t filled = len - diff;
 	if(!ptr) {
 		memset(buffer, 0, len);
 		return 0;
@@ -91,7 +91,7 @@ size_t compact_buffer(char *buffer, size_t len, char *ptr) {
 #ifdef DEBUG
 	fprintf(stderr, "memsetting: buffer %p, ptr %p, filled %zu, diff %zu\n", buffer, ptr, filled, diff);
 #endif
-    memmove(buffer, ptr, filled);
+	memmove(buffer, ptr, filled);
 	memset(buffer + filled, 0, diff);
 	return filled;
 }

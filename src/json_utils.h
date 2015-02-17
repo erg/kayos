@@ -4,26 +4,26 @@
 #include <forestdb.h>
 #include <jansson.h>
 
-typedef enum  {
+typedef enum {
 	REQUIRED_KEY = 0,
 	OPTIONAL_KEY = 1,
 	KEY_NOT_FOUND = 2,
 } json_key_type;
 
 #define FOREACH_JSON_ERROR(ERROR) \
-        ERROR(COMMAND_MISSING)   \
-        ERROR(INVALID_COMMAND)  \
-        ERROR(KEY_REQUIRED)  \
+		ERROR(COMMAND_MISSING) \
+		ERROR(INVALID_COMMAND) \
+		ERROR(KEY_REQUIRED) \
 
 #define GENERATE_ENUM(ENUM) ENUM,
 #define GENERATE_STRING(STRING) #STRING,
 
 enum KAYOS_JSON_ERROR_ENUM {
-    FOREACH_JSON_ERROR(GENERATE_ENUM)
+	FOREACH_JSON_ERROR(GENERATE_ENUM)
 };
 
 static const char *KAYOS_JSON_ERROR_STRING[] = {
-    FOREACH_JSON_ERROR(GENERATE_STRING)
+	FOREACH_JSON_ERROR(GENERATE_STRING)
 };
 
 void json_print_error(json_error_t error);

@@ -15,7 +15,7 @@ fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	void *key, size_t key_length,
 	void *value, size_t value_length) {
 
-    fdb_status status = FDB_RESULT_INVALID_ARGS;
+	fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
 		status = fdb_set_kv(kvs, key, key_length, value, value_length);
@@ -34,7 +34,7 @@ fdb_status do_set_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 fdb_status do_delete_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	void *key, size_t key_length) {
 
-    fdb_status status = FDB_RESULT_INVALID_ARGS;
+	fdb_status status = FDB_RESULT_INVALID_ARGS;
 
 	if(key) {
 		status = fdb_del_kv(kvs, key, key_length);
@@ -58,22 +58,22 @@ void do_forestdb_producer_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 
 	if(command) {
 		if(!strcmp(command, "set")) {
-            if(!key) {
-                key_expected(command);
-            } else if(!value) {
-                value_expected(command);
-            } else {
-			    ret = do_set_command(dbfile, kvs, key, key_length, value, value_length);
-			    command_ok(ret);
-            }
+			if(!key) {
+				key_expected(command);
+			} else if(!value) {
+				value_expected(command);
+			} else {
+				ret = do_set_command(dbfile, kvs, key, key_length, value, value_length);
+				command_ok(ret);
+			}
 		}
 		else if(!strcmp(command, "delete")) {
-            if(!key) {
-                key_expected(command);
-            } else {
-			    ret = do_delete_command(dbfile, kvs, key, key_length);
-			    command_ok(ret);
-            }
+			if(!key) {
+				key_expected(command);
+			} else {
+				ret = do_delete_command(dbfile, kvs, key, key_length);
+				command_ok(ret);
+			}
 		} else {
 			fprintf(stderr, "unknown command: %s\n", command);
 		}

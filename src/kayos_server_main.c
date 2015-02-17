@@ -94,14 +94,14 @@ void fork_socket_handler(int new_stdin, int new_stdout, char *binary_path, char 
 }
 
 static int server_usage(int argc, char *argv[]) {
-    fprintf(stderr, "usage: %s dbpath\n", argv[0]);
-    return 0;
+	fprintf(stderr, "usage: %s dbpath\n", argv[0]);
+	return 0;
 }
 
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
-        return server_usage(argc, argv);
-    }
+		return server_usage(argc, argv);
+	}
 
 	ensure_kayos_data_path();
 	char *dbname = argv[1];

@@ -20,44 +20,44 @@
 static char buffer[BUFFER_LENGTH];
 
 int client_usage(int argc, char *argv[]) {
-    (void)argc;
-    fprintf(stderr, "usage: %s dbpath\n", argv[0]);
-    return 0;
+	(void)argc;
+	fprintf(stderr, "usage: %s dbpath\n", argv[0]);
+	return 0;
 }
 
 void key_expected(const char *command) {
-    fprintf(stdout, "key expected for command ``%s``\n", command);
+	fprintf(stdout, "key expected for command ``%s``\n", command);
 }
 
 void value_expected(const char *command) {
-    fprintf(stdout, "value expected for command ``%s``\n", command);
+	fprintf(stdout, "value expected for command ``%s``\n", command);
 }
 
 fdb_file_handle *init_fdb_file_handle(const char *dbname) {
-    if(!kayos_dbname_valid_p(dbname))
-        fatal_error("invalid dbname");
-    fdb_status status;
-    fdb_file_handle *dbfile;
-    fdb_config db_config = fdb_get_default_config();
-    char *path = get_kayos_data_path_for(dbname);
-    status = fdb_open(&dbfile, path, &db_config);
-    free(path);
+	if(!kayos_dbname_valid_p(dbname))
+		fatal_error("invalid dbname");
+	fdb_status status;
+	fdb_file_handle *dbfile;
+	fdb_config db_config = fdb_get_default_config();
+	char *path = get_kayos_data_path_for(dbname);
+	status = fdb_open(&dbfile, path, &db_config);
+	free(path);
 
-    if(status != FDB_RESULT_SUCCESS)
-        fatal_error("fdb_open failed");
+	if(status != FDB_RESULT_SUCCESS)
+		fatal_error("fdb_open failed");
 
-    return dbfile;
+	return dbfile;
 }
 
 fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile) {
-    fdb_status status;
-    fdb_kvs_handle *kvs;
-    fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
-    status = fdb_kvs_open_default(dbfile, &kvs, &kvs_config);
-    if(status != FDB_RESULT_SUCCESS)
-        fatal_error("fdb_kvs_open_default failed");
+	fdb_status status;
+	fdb_kvs_handle *kvs;
+	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
+	status = fdb_kvs_open_default(dbfile, &kvs, &kvs_config);
+	if(status != FDB_RESULT_SUCCESS)
+		fatal_error("fdb_kvs_open_default failed");
 
-    return kvs;
+	return kvs;
 }
 
 // Allocates, call free on return value
@@ -145,26 +145,20 @@ void client_loop(const char *dbname,
 		// Used for closing HTTP commands.
 		// We returned -1, so we should disconnect the client.
 		if(remaining == -1) {
-            fprintf(stderr, "closing kvs0\n");
 			fdb_kvs_close(kvs);
 			kvs = NULL;
-            fprintf(stderr, "closing dbfile0\n");
 			fdb_close(dbfile);
 			dbfile = NULL;
 			break;
 		}
-        debug_print("closing kvs1\n");
 		fdb_kvs_close(kvs);
 		kvs = NULL;
 
-        debug_print("closing dbfile1\n");
 		fdb_close(dbfile);
 		dbfile = NULL;
 	} while(1);
 
-    debug_print("closing kvs2\n");
 	fdb_kvs_close(kvs);
-    debug_print("closing dbfile2\n");
 	fdb_close(dbfile);
 
 #ifdef KAYOS_DEBUG

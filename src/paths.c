@@ -12,9 +12,9 @@ static const char default_data_path[] = "/usr/local/var/lib/kayos";
 
 // Allow a-z first char, then a-z, 0-9, _$()+-/
 int kayos_dbname_valid_p(const char *dbname) {
-    if(!dbname) return 0;
-    if(!(dbname[0] >= 'a' && dbname[0] <= 'z')) return 0;
-    return strlen(dbname + 1) == strspn(dbname + 1, allowed_chars);
+	if(!dbname) return 0;
+	if(!(dbname[0] >= 'a' && dbname[0] <= 'z')) return 0;
+	return strlen(dbname + 1) == strspn(dbname + 1, allowed_chars);
 }
 
 void ensure_kayos_data_path() {

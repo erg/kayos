@@ -8,9 +8,9 @@
 #include "consumer_json.h"
 
 int main(int argc, char *argv[]) {
-    if(argc != 2) {
-        return client_usage(argc, argv);
-    }
+	if(argc != 2) {
+		return client_usage(argc, argv);
+	}
 
 	ensure_kayos_data_path();
 	char *dbname = argv[1];
