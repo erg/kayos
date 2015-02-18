@@ -39,7 +39,7 @@ void call_json_iterate(fdb_kvs_handle *kvs, json_t *json_errors, json_t *json) {
 		do_iterate_command(kvs, start, json_print_cb);
 }
 
-void call_consumer_json(fdb_file_handle *dbfile, fdb_kvs_handle *kvs, json_t *json) {
+void call_consumer_json(fdb_file_handle *db, fdb_kvs_handle *kvs, json_t *json) {
 
 	json_t *json_errors = new_json_errors();
 	const char *command = json_string_value(

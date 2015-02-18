@@ -90,7 +90,8 @@ static void telnet_print_key_doc(fdb_doc *doc) {
 			doc->seqnum, (int)doc->keylen, (char*)doc->key, (int)doc->bodylen, (char*)doc->body);
 }
 
-void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+void do_forestdb_consumer_command(fdb_file_handle *db, fdb_kvs_handle *kvs,
+		char *kvs_name,
 		char *command,
 		void *key, size_t key_length,
 		void *value, size_t value_length) {
@@ -101,8 +102,9 @@ void do_forestdb_consumer_command(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 		if(!strcmp(command, "topic")) {
 			if(!key)
 				key_expected(command);
-			else
-				ret = do_topic_command(kvs, key);
+			else {
+				do_topic_command(kvs_name, key);
+			}
 		} else if(!strcmp(command, "get")) {
 			if(!key)
 				key_expected(command);

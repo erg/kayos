@@ -4,15 +4,15 @@
 #include <forestdb.h>
 #include <jansson.h>
 
-void call_json_set(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+void call_json_set(fdb_file_handle *db, fdb_kvs_handle *kvs,
 		json_t *json_errors,
 		json_t *json);
 
-void call_json_delete(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+void call_json_delete(fdb_file_handle *db, fdb_kvs_handle *kvs,
 		json_t *json_errors,
 		json_t *json);
 
-void call_producer_json(fdb_file_handle *dbfile,
+void call_producer_json(fdb_file_handle *db,
 		fdb_kvs_handle *kvs,
 		json_t *json);
 

@@ -37,27 +37,32 @@ fdb_file_handle *init_fdb_file_handle(const char *dbname) {
 	if(!kayos_dbname_valid_p(dbname))
 		fatal_error("invalid dbname");
 	fdb_status status;
-	fdb_file_handle *dbfile;
+	fdb_file_handle *db;
 	fdb_config db_config = fdb_get_default_config();
 	char *path = get_kayos_data_path_for(dbname);
-	status = fdb_open(&dbfile, path, &db_config);
+	status = fdb_open(&db, path, &db_config);
 	free(path);
 
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_open failed");
 
-	return dbfile;
+	return db;
 }
 
-fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *dbfile) {
+fdb_kvs_handle *init_fdb_kvs_handle(fdb_file_handle *db, char *kvs_name) {
 	fdb_status status;
 	fdb_kvs_handle *kvs;
 	fdb_kvs_config kvs_config = fdb_get_default_kvs_config();
-	status = fdb_kvs_open_default(dbfile, &kvs, &kvs_config);
+	status = fdb_kvs_open(db, &kvs, kvs_name, &kvs_config);
 	if(status != FDB_RESULT_SUCCESS)
 		fatal_error("fdb_kvs_open_default failed");
 
 	return kvs;
+}
+
+void do_topic_command(char *kvs_name, char *new_name) {
+	free(kvs_name);
+	kvs_name = strdup(new_name);
 }
 
 // Allocates, call free on return value
@@ -92,16 +97,6 @@ void parse_key_value(const char *line, char **key, char **value) {
 	unimplemented("parse_key_value()");
 }
 
-fdb_status do_topic_command(fdb_kvs_handle *kvs,
-	const char *dbname) {
-	// open topic or lookup, switch current topic
-
-	//fdb_status status = FDB_RESULT_INVALID_ARGS;
-
-	unimplemented("do_topic_command()");
-	return FDB_RESULT_INVALID_ARGS;
-}
-
 void command_ok(fdb_status status) {
 	if(status == FDB_RESULT_SUCCESS)
 		fprintf(stdout, "OK\n");
@@ -116,30 +111,31 @@ void client_loop(const char *dbname,
 
 	ssize_t remaining = 0;
 
-	fdb_file_handle *dbfile = NULL;
+	fdb_file_handle *db = NULL;
 	fdb_kvs_handle *kvs = NULL;
+	char *kvs_name = strdup("default");
 
 	do {
 
 		debug_hexdump("producer_client loop head", buffer, remaining);
 		ssize_t nbytes = safe_read(0, buffer + remaining, sizeof(buffer) - 1 - remaining);
 
-		dbfile = init_fdb_file_handle(dbname);
-		kvs = init_fdb_kvs_handle(dbfile);
+		db = init_fdb_file_handle(dbname);
+		kvs = init_fdb_kvs_handle(db, kvs_name);
 
 		if(nbytes == 0) {
 			debug_print("producer_client: client disconnected\n");
 			fdb_kvs_close(kvs);
 			kvs = NULL;
-			fdb_close(dbfile);
-			dbfile = NULL;
+			fdb_close(db);
+			db = NULL;
 			break;
 		} else if(nbytes == -1) {
 			libc_fatal_error("consumer_client: safe_read");
 		} else {
 			buffer[nbytes] = 0;
 			debug_hexdump("consumer_client got", buffer, nbytes);
-			remaining = handle_buffer(dbfile, kvs, handler, handle_http, json_handler, buffer, nbytes);
+			remaining = handle_buffer(db, kvs, kvs_name, handler, handle_http, json_handler, buffer, nbytes);
 		}
 
 		// Used for closing HTTP commands.
@@ -147,19 +143,31 @@ void client_loop(const char *dbname,
 		if(remaining == -1) {
 			fdb_kvs_close(kvs);
 			kvs = NULL;
-			fdb_close(dbfile);
-			dbfile = NULL;
+			fdb_close(db);
+			db = NULL;
 			break;
 		}
 		fdb_kvs_close(kvs);
 		kvs = NULL;
 
-		fdb_close(dbfile);
-		dbfile = NULL;
+		fdb_close(db);
+		db = NULL;
 	} while(1);
 
-	fdb_kvs_close(kvs);
-	fdb_close(dbfile);
+	if(kvs_name) {
+		free(kvs_name);
+		kvs_name = NULL;
+	}
+
+	if(kvs) {
+		fdb_kvs_close(kvs);
+		kvs = NULL;
+	}
+
+	if(db) {
+		fdb_close(db);
+		db = NULL;
+	}
 
 #ifdef KAYOS_DEBUG
 	if(remaining > 0) {
@@ -168,7 +176,7 @@ void client_loop(const char *dbname,
 #endif
 }
 
-ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+ssize_t handle_buffer(fdb_file_handle *db, fdb_kvs_handle *kvs, char *kvs_name,
 		forestdb_handler_t handler,
 		http_handler_t handle_http,
 		json_handler_t json_handler,
@@ -190,11 +198,11 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 		}
 
 		if(*ptr == '{' || *ptr == '[')
-			remaining = parse_json(dbfile, kvs, json_handler, ptr, end - ptr);
+			remaining = parse_json(db, kvs, kvs_name, json_handler, ptr, end - ptr);
 		else if(*ptr <= 127)
-			remaining = parse_line(dbfile, kvs, handler, handle_http, ptr, end - ptr);
+			remaining = parse_line(db, kvs, kvs_name, handler, handle_http, ptr, end - ptr);
 		else
-			remaining = parse_binary(dbfile, kvs, handler, ptr, end - ptr);
+			remaining = parse_binary(db, kvs, kvs_name, handler, ptr, end - ptr);
 
 		ptr = end - remaining;
 		debug_print("previous %zu, remaining: %zu\n", previous_remaining, remaining);
@@ -209,7 +217,8 @@ ssize_t handle_buffer(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	return remaining;
 }
 
-ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+ssize_t parse_json(fdb_file_handle *db, fdb_kvs_handle *kvs,
+	char *kvs_name,
 	json_handler_t json_handler,
 	char *buffer, size_t len) {
 
@@ -233,17 +242,18 @@ ssize_t parse_json(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 		size_t index;
 		json_t *json_elt;
 		json_array_foreach(json, index, json_elt) {
-			json_handler(dbfile, kvs, json_elt);
+			json_handler(db, kvs, json_elt);
 		}
 	// {}
 	} else
-		json_handler(dbfile, kvs, json);
+		json_handler(db, kvs, json);
 
 	json_decref(json);
 	return len - error.position;
 }
 
-size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+size_t parse_binary(fdb_file_handle *db, fdb_kvs_handle *kvs,
+	char *kvs_name,
 	forestdb_handler_t handler,
 	char *line, size_t len) {
 
@@ -251,7 +261,8 @@ size_t parse_binary(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	return 0;
 }
 
-ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
+ssize_t parse_line(fdb_file_handle *db, fdb_kvs_handle *kvs,
+	char *kvs_name,
 	forestdb_handler_t handler,
 	http_handler_t http_handler,
 	char *line, size_t len) {
@@ -265,7 +276,7 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	// HTTP commands are uppercase
 	// send entire line
 	if(len > 0 && isupper(line[0])) {
-		return http_handler(dbfile, kvs, handler, line, end - line);
+		return http_handler(db, kvs, handler, line, end - line);
 	}
 
 	// look for entire line, if no entire line, process it next time around
@@ -297,6 +308,6 @@ ssize_t parse_line(fdb_file_handle *dbfile, fdb_kvs_handle *kvs,
 	debug_print("val: %s\n", val);
 	debug_print("rest: %s\n\n", rest);
 
-	handler(dbfile, kvs, command, key, key_length, val, val_length);
+	handler(db, kvs, kvs_name, command, key, key_length, val, val_length);
 	return end - eol;
 }
