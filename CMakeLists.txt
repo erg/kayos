@@ -10,27 +10,33 @@ set(kayos_VERSION_MINOR 1)
 
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/src)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/forestdb/include/libforestdb)
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/http-parser)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/jansson/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/deps/forestdb/include/libforestdb)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/deps/http-parser)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/deps/jansson/include)
+
+include_directories(
+    deps/jansson/include
+    deps/forestdb/include/libforestdb
+    deps/http-parser
+)
 
 find_package(PythonLibs)
 
 #message("CMAKE_INCLUDE_PATH: ${CMAKE_INCLUDE_PATH}")
 
-add_subdirectory(forestdb)
+add_subdirectory(deps/forestdb)
 find_path(FORESTDB_INCLUDES
   NAMES forestdb.h
-  PATHS ${PROJECT_SOURCE_DIR}/forestdb/include/libforestdb/forestdb.h)
+  PATHS ${PROJECT_SOURCE_DIR}/deps/forestdb/include/libforestdb/forestdb.h)
 
-add_subdirectory(jansson)
+add_subdirectory(deps/jansson)
 find_path(JANSSON_INCLUDES
   NAMES jansson.h
-  PATHS ${PROJECT_SOURCE_DIR}/jansson/src/jansson.h)
+  PATHS ${PROJECT_SOURCE_DIR}/deps/jansson/src/jansson.h)
 
 find_path(HTTP-PARSER-INCLUDES
   NAMES http_parser.h
-  PATHS ${PROJECT_SOURCE_DIR}/http-parser)
+  PATHS ${PROJECT_SOURCE_DIR}/deps/http-parser)
 
 set(common_files
   src/both.c
@@ -40,8 +46,8 @@ set(common_files
   src/json_utils.c
   src/paths.c
   src/io.c
-  http-parser/http_parser.c
-  http-parser/http_parser.h
+  deps/http-parser/http_parser.c
+  deps/http-parser/http_parser.h
 )
 
 add_executable(kayos-producer

@@ -1,9 +1,9 @@
 [submodule "jansson"]
-	path = jansson
+	path = deps/jansson
 	url = https://github.com/akheron/jansson.git
 [submodule "forestdb"]
-	path = forestdb
+	path = deps/forestdb
 	url = https://github.com/couchbaselabs/forestdb.git
 [submodule "http-parser"]
-	path = http-parser
+	path = deps/http-parser
 	url = https://github.com/joyent/http-parser.git
